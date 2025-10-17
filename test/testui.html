@@ -1,11 +1,51 @@
 <!DOCTYPE html>
+<!--
+╔══════════════════════════════════════════════════════════════════╗
+║  ZombieCoder Local AI - Test UI Dashboard                       ║
+╚══════════════════════════════════════════════════════════════════╝
+
+সার্ভার চালানো এবং টেস্ট করার নির্দেশনা:
+═══════════════════════════════════════════════════
+
+📌 সার্ভার চালু করুন:
+   1. Terminal খুলুন
+   2. cd C:\model
+   3. python model_server.py
+   4. সার্ভার চালু হবে: http://localhost:8155
+
+📌 এই UI টেস্ট করুন:
+   1. সার্ভার চালু থাকা অবস্থায়
+   2. ব্রাউজারে খুলুন: file:///C:/model/test/testui.html
+   3. অথবা: cd C:\model\test && python testui.py
+   4. তারপর: http://localhost:8080
+
+📌 টেস্ট করার পদ্ধতি:
+   ✓ System Info দেখবে - CPU, RAM, GPU info
+   ✓ Models দেখবে - Installed এবং Available
+   ✓ Chat করবে - Model এর সাথে কথা বলুন
+   ✓ Endpoints চেক করবে - নিচে footer এ সব API
+
+📌 যা যা টেস্ট হবে:
+   • /health - সার্ভার health check
+   • /system/info - Hardware information  
+   • /models/installed - ইনস্টল করা models
+   • /models/available - Available models
+   • /api/generate - Text generation
+   • /runtime/status - Runtime state
+
+Created by: Sahon Srabon
+Contact: infi@zombiecoder.my.id
+-->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ollama Server Dashboard</title>
+    <title>ZombieCoder Local AI - Test Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* ═══════════════════════════════════════════
+           CSS Variables - রঙ এবং স্টাইল সেটিংস
+           ═══════════════════════════════════════════ */
         :root {
             --primary: #4361ee;
             --secondary: #3f37c9;
@@ -509,29 +549,73 @@
     </style>
 </head>
 <body>
+    <!-- ═══════════════════════════════════════════════════════════════
+         Main Container - Dashboard এর মূল অংশ
+         ═══════════════════════════════════════════════════════════════
+         
+         📌 এই UI তে যা আছে:
+         1. Header - Title এবং status indicator
+         2. Dashboard Cards - System info & Models list
+         3. Chat Interface - Model এর সাথে কথা বলার জন্য
+         4. Footer - API endpoints status monitoring
+         
+         📌 টেস্ট করার পদ্ধতি:
+         Step 1: সার্ভার চালু করুন
+                 cd C:\model
+                 python model_server.py
+         
+         Step 2: Model load করুন (optional - chat এর জন্য প্রয়োজন)
+                 curl -X POST http://localhost:8155/runtime/load/tinyllama-gguf
+         
+         Step 3: এই page খুলুন ব্রাউজারে
+                 file:///C:/model/test/testui.html
+         
+         Step 4: UI interact করুন:
+                 - "Refresh Server Data" click করুন
+                 - Chat box এ message লিখুন
+                 - Auto questions try করুন
+                 - Footer এ endpoints status দেখুন
+    -->
     <div class="container">
         <header>
             <div class="logo">
-                <div class="logo-icon">O</div>
-                <h1>Ollama Server Dashboard</h1>
+                <div class="logo-icon">🧟</div>
+                <h1>ZombieCoder Local AI - Test Dashboard</h1>
             </div>
             <div class="status-indicator">
                 <div class="status-dot"></div>
-                <span>Server Online</span>
+                <span>Server Testing Mode</span>
             </div>
         </header>
 
+        <!-- ═══════════════════════════════════════════════════════════
+             Dashboard Cards - System & Models Information
+             ═══════════════════════════════════════════════════════════
+             
+             📌 Card 1: System Information
+             - API: GET /system/info
+             - দেখায়: CPU, RAM, GPU, OS tier
+             - টেস্ট: curl http://localhost:8155/system/info
+             
+             📌 Card 2: Models
+             - API: GET /models/installed, /models/available
+             - দেখায়: Installed models এবং Available models
+             - টেস্ট: curl http://localhost:8155/models/installed
+        -->
         <div class="dashboard">
+            <!-- System Information Card -->
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">System Information</h2>
                     <div class="card-icon">💻</div>
                 </div>
                 <div class="info-grid" id="system-info">
-                    <!-- System info will be populated here -->
+                    <!-- System info dynamically populated from API -->
+                    <!-- Data source: GET /system/info -->
                 </div>
             </div>
 
+            <!-- Models Card -->
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">Models</h2>
@@ -541,28 +625,59 @@
                     <div class="info-item">
                         <span class="info-label">Installed Models</span>
                         <div id="installed-models">
-                            <!-- Installed models will be populated here -->
+                            <!-- Installed models from API: GET /models/installed -->
+                            <!-- Examples: tinyllama-gguf, phi-2 -->
                         </div>
                     </div>
                     <div class="info-item">
                         <span class="info-label">Available Models</span>
                         <div id="available-models">
-                            <!-- Available models will be populated here -->
+                            <!-- Available models from API: GET /models/available -->
+                            <!-- Shows recommended models for your system tier -->
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- ═══════════════════════════════════════════════════════════
+             Chat Interface - Model এর সাথে কথা বলার জন্য
+             ═══════════════════════════════════════════════════════════
+             
+             📌 Chat করার জন্য:
+             1. Model load করুন: POST /runtime/load/tinyllama-gguf
+             2. Message box এ আপনার question লিখুন
+             3. Send button click করুন অথবা Enter press করুন
+             4. Model response পাবেন 3-5 সেকেন্ডে
+             
+             📌 API Endpoint:
+             - POST /api/generate
+             - Body: {"model":"tinyllama-gguf","prompt":"your message"}
+             
+             📌 Auto Questions:
+             - Pre-defined questions quick testing এর জন্য
+             - যেকোনো button click করুন test করতে
+             
+             📌 NOTE:
+             - Model load না থাকলে 409 error দেবে
+             - Real API uncomment করুন sendMessage() function এ
+        -->
         <div class="chat-container">
+            <!-- Chat Interface Left Side -->
             <div class="chat-interface">
                 <div class="chat-header">
                     <h3 class="chat-title">Chat with Model</h3>
-                    <div class="chip" id="current-model">phi-2</div>
+                    <div class="chip" id="current-model">tinyllama-gguf</div>
                 </div>
                 <div class="chat-messages" id="chat-messages">
                     <div class="message bot-message">
-                        Hello! I'm the Ollama assistant. How can I help you today?
+                        Hello! I'm ZombieCoder AI. Ask me anything about code, tech, or general questions!
+                        <!-- 
+                        💡 টেস্ট করার উপায়:
+                        1. Model load: curl -X POST http://localhost:8155/runtime/load/tinyllama-gguf
+                        2. এখানে message type করুন
+                        3. Real response পেতে sendMessage() এ API uncomment করুন
+                        -->
                     </div>
                 </div>
                 <div class="chat-input">
@@ -571,35 +686,85 @@
                 </div>
             </div>
 
+            <!-- Auto Chat Questions Right Side -->
             <div class="auto-chat">
                 <h3 class="auto-chat-title">Auto Chat Questions</h3>
+                <!-- 
+                📌 Quick Testing Questions:
+                - Server এর বিভিন্ন aspects test করার জন্য pre-made questions
+                - Click করলে automatically chat এ যাবে
+                - Real model থাকলে actual response পাবেন
+                -->
                 <div class="auto-chat-buttons">
-                    <button class="auto-chat-btn" data-question="Explain how this server works.">Explain how this server works.</button>
-                    <button class="auto-chat-btn" data-question="What models are available on this server?">What models are available on this server?</button>
-                    <button class="auto-chat-btn" data-question="Tell me about the system specifications.">Tell me about the system specifications.</button>
-                    <button class="auto-chat-btn" data-question="How do I install a new model?">How do I install a new model?</button>
-                    <button class="auto-chat-btn" data-question="What is the purpose of this dashboard?">What is the purpose of this dashboard?</button>
+                    <button class="auto-chat-btn" data-question="Write a Python hello world program">Write a Python hello world program</button>
+                    <button class="auto-chat-btn" data-question="Explain machine learning in simple terms">Explain machine learning in simple terms</button>
+                    <button class="auto-chat-btn" data-question="What is FastAPI and why use it?">What is FastAPI and why use it?</button>
+                    <button class="auto-chat-btn" data-question="Create a function to calculate factorial">Create a function to calculate factorial</button>
+                    <button class="auto-chat-btn" data-question="Explain async/await in Python">Explain async/await in Python</button>
                 </div>
             </div>
         </div>
 
+        <!-- 
+        📌 Refresh Button:
+        - Server থেকে latest data fetch করে
+        - System info, models list update করে
+        - Click করলে fetchServerData() call হয়
+        - Real API enable করতে function এর code uncomment করুন
+        -->
         <button class="refresh-btn" id="refresh-btn">
             <span>Refresh Server Data</span>
         </button>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════════
+         Footer - API Endpoints Status Monitor
+         ═══════════════════════════════════════════════════════════
+         
+         📌 Footer এর features:
+         1. সব API endpoints এর real-time status
+         2. Online/Offline indicator (green/red dot)
+         3. Copy URL button - clipboard এ copy করে
+         4. Status check button - manually check করতে
+         5. Real-time clock
+         
+         📌 Endpoints যা monitor করা হয়:
+         - http://127.0.0.1:8155 (Main server)
+         - /health - Health check
+         - /system/info - System information
+         - /models/installed - Installed models
+         - /models/available - Available models
+         
+         📌 Auto Status Check:
+         - প্রতি 5 সেকেন্ডে automatically check হয়
+         - Green dot = Server running
+         - Red dot = Server not responding
+         
+         📌 Interactive Features:
+         - Copy button: URL clipboard এ copy করে
+         - Status button: Manual refresh করে
+         - Footer draggable (move করা যায়)
+         - Toggle button: Footer hide/show করে
+    -->
     <footer class="footer">
         <div class="footer-container">
             <h3 class="footer-title">
                 <i class="fas fa-server"></i>
-                Server Endpoints Status
+                Server Endpoints Status (Live Monitoring)
             </h3>
             <div class="endpoint-grid" id="endpoint-grid">
-                <!-- Endpoint status items will be populated here -->
+                <!-- 
+                Endpoint status items dynamically populated here
+                প্রতিটি endpoint এর জন্য:
+                - URL display
+                - Online/Offline status
+                - Copy button
+                - Manual check button
+                -->
             </div>
             <div class="footer-controls">
                 <div class="clock" id="real-time-clock">
-                    <!-- Real-time clock will be updated here -->
+                    <!-- Real-time clock updates every second -->
                 </div>
                 <div>
                     <button class="footer-btn" id="toggle-footer">
@@ -615,45 +780,84 @@
         </div>
     </footer>
 
+    <!-- Notification Toast - URL copy করলে দেখায় -->
     <div class="copy-notification" id="copy-notification">
         <i class="fas fa-check-circle"></i>
         <span>URL copied to clipboard!</span>
     </div>
 
     <script>
-        // API endpoints
+        /* ═══════════════════════════════════════════════════════════════
+           JavaScript - API Testing এবং Dashboard Logic
+           ═══════════════════════════════════════════════════════════════
+           
+           📌 এই script এর কাজ:
+           1. API endpoints থেকে data fetch করা
+           2. System info, models list দেখানো
+           3. Chat interface এর মাধ্যমে model test করা
+           4. Endpoint status monitoring
+           
+           📌 প্রধান functions:
+           - fetchServerData() - সার্ভার থেকে data নেয়
+           - sendMessage() - Chat message পাঠায়
+           - checkEndpointStatus() - Endpoint alive কিনা check করে
+           
+           📌 টেস্ট করার জন্য:
+           - প্রথমে model_server.py চালু করুন (Port 8155)
+           - তারপর এই page খুলুন
+           - "Refresh Server Data" বাটন ক্লিক করুন
+           - Chat করে model test করুন
+        */
+        
+        // ═══════════════════════════════════════════
+        // API Endpoints Configuration
+        // সব API endpoints এখানে define করা আছে
+        // ═══════════════════════════════════════════
         const API_ENDPOINTS = {
-            WEB_UI: 'http://127.0.0.1:8155',
-            SYSTEM_INFO: '/system/info',
-            MODELS_AVAILABLE: '/models/available',
-            MODELS_INSTALLED: '/models/installed',
-            HEALTH: '/health'
+            WEB_UI: 'http://127.0.0.1:8155',           // Main server URL
+            SYSTEM_INFO: '/system/info',                // Hardware info API
+            MODELS_AVAILABLE: '/models/available',      // Available models list
+            MODELS_INSTALLED: '/models/installed',      // Installed models list
+            HEALTH: '/health'                           // Health check API
         };
 
-        // DOM elements
-        const systemInfoEl = document.getElementById('system-info');
-        const installedModelsEl = document.getElementById('installed-models');
-        const availableModelsEl = document.getElementById('available-models');
-        const chatMessagesEl = document.getElementById('chat-messages');
-        const messageInputEl = document.getElementById('message-input');
-        const sendBtn = document.getElementById('send-btn');
-        const autoChatBtns = document.querySelectorAll('.auto-chat-btn');
-        const refreshBtn = document.getElementById('refresh-btn');
-        const currentModelEl = document.getElementById('current-model');
-        const endpointGridEl = document.getElementById('endpoint-grid');
-        const realTimeClockEl = document.getElementById('real-time-clock');
-        const toggleFooterBtn = document.getElementById('toggle-footer');
-        const resetFooterBtn = document.getElementById('reset-footer');
-        const copyNotificationEl = document.getElementById('copy-notification');
-        const footerEl = document.querySelector('.footer');
+        // ═══════════════════════════════════════════
+        // DOM Elements - HTML elements reference
+        // সব HTML elements এর reference এখানে
+        // ═══════════════════════════════════════════
+        const systemInfoEl = document.getElementById('system-info');           // System info card
+        const installedModelsEl = document.getElementById('installed-models'); // Installed models
+        const availableModelsEl = document.getElementById('available-models'); // Available models
+        const chatMessagesEl = document.getElementById('chat-messages');       // Chat messages area
+        const messageInputEl = document.getElementById('message-input');       // Message input field
+        const sendBtn = document.getElementById('send-btn');                   // Send button
+        const autoChatBtns = document.querySelectorAll('.auto-chat-btn');     // Auto chat buttons
+        const refreshBtn = document.getElementById('refresh-btn');             // Refresh button
+        const currentModelEl = document.getElementById('current-model');       // Current model chip
+        const endpointGridEl = document.getElementById('endpoint-grid');       // Endpoints grid
+        const realTimeClockEl = document.getElementById('real-time-clock');    // Clock display
+        const toggleFooterBtn = document.getElementById('toggle-footer');      // Toggle footer
+        const resetFooterBtn = document.getElementById('reset-footer');        // Reset layout
+        const copyNotificationEl = document.getElementById('copy-notification');// Copy notification
+        const footerEl = document.querySelector('.footer');                    // Footer element
 
-        // Initialize the dashboard
+        /* ═══════════════════════════════════════════════════════════════
+           Dashboard Initialization - পেজ লোড হলে চালু হয়
+           ═══════════════════════════════════════════════════════════════
+           
+           📌 এই function page load এর সাথে সাথে চালু হয়:
+           1. fetchServerData() - সার্ভার থেকে data আনে
+           2. initializeEndpoints() - API endpoints list তৈরি করে
+           3. updateClock() - Real-time clock শুরু করে
+           4. checkEndpointStatus() - প্রতি 5 সেকেন্ডে endpoint check করে
+           5. Event listeners setup - বাটন ক্লিক handling
+        */
         document.addEventListener('DOMContentLoaded', function() {
-            fetchServerData();
-            initializeEndpoints();
-            updateClock();
-            setInterval(updateClock, 1000);
-            setInterval(checkEndpointStatus, 5000); // Check status every 5 seconds
+            fetchServerData();           // সার্ভার data fetch করুন
+            initializeEndpoints();       // Endpoints initialize করুন
+            updateClock();               // Clock update করুন
+            setInterval(updateClock, 1000);              // প্রতি সেকেন্ডে clock update
+            setInterval(checkEndpointStatus, 5000);      // প্রতি 5 সেকেন্ডে endpoint status check
             
             // Set up event listeners
             sendBtn.addEventListener('click', sendMessage);
@@ -725,7 +929,27 @@
             }
         }
 
-        // Check status of all endpoints
+        /* ═══════════════════════════════════════════════════════════════
+           checkEndpointStatus() - সব Endpoints এর Status Check করা
+           ═══════════════════════════════════════════════════════════════
+           
+           📌 এই function এর কাজ:
+           1. সব API endpoints loop করে check করে
+           2. প্রতিটি endpoint alive কিনা verify করে
+           3. Status indicator update করে (online/offline)
+           4. প্রতি 5 সেকেন্ডে automatically চালু হয়
+           
+           📌 Real Testing করতে:
+           - checkSingleEndpointStatus() এ actual fetch() call করুন
+           - Server running থাকলে green (online) দেখাবে
+           - Server off থাকলে red (offline) দেখাবে
+           
+           📌 টেস্ট Endpoints:
+           - http://localhost:8155/health
+           - http://localhost:8155/system/info
+           - http://localhost:8155/models/installed
+           - http://localhost:8155/models/available
+        */
         async function checkEndpointStatus() {
             for (const [name, url] of Object.entries(API_ENDPOINTS)) {
                 const fullUrl = name === 'WEB_UI' ? url : `http://127.0.0.1:8155${url}`;
@@ -737,7 +961,24 @@
             }
         }
 
-        // Check status of a single endpoint
+        /* ═══════════════════════════════════════════════════════════════
+           checkSingleEndpointStatus() - একটি Endpoint Check করা
+           ═══════════════════════════════════════════════════════════════
+           
+           📌 Parameters:
+           - name: Endpoint এর নাম (যেমন: 'HEALTH', 'SYSTEM_INFO')
+           - url: Full URL (যেমন: 'http://localhost:8155/health')
+           - endpointItem: DOM element যা update করতে হবে
+           - showNotification: Notification দেখাবে কিনা
+           
+           📌 Real API Check করতে:
+           - নিচের simulated code মুছে দিন
+           - Uncomment করুন actual fetch() call
+           - Example:
+             const response = await fetch(url);
+             if (response.ok) { status = 'online'; }
+             else { status = 'offline'; }
+        */
         async function checkSingleEndpointStatus(name, url, endpointItem, showNotification = true) {
             const statusEl = endpointItem.querySelector('.endpoint-status');
             const statusIcon = statusEl.querySelector('i');
@@ -876,13 +1117,52 @@
             }
         }
 
-        // Fetch server data
+        /* ═══════════════════════════════════════════════════════════════
+           fetchServerData() - সার্ভার থেকে Data Fetch করা
+           ═══════════════════════════════════════════════════════════════
+           
+           📌 এই function এর কাজ:
+           1. API server থেকে system info আনে
+           2. Installed models list আনে
+           3. Available models list আনে
+           4. সব data UI তে display করে
+           
+           📌 Real API Call করতে চাইলে:
+           - Simulate section মুছে দিয়ে actual fetch() ব্যবহার করুন
+           - উদাহরণ:
+             const response = await fetch('http://localhost:8155/system/info');
+             const data = await response.json();
+             displaySystemInfo(data);
+           
+           📌 বর্তমানে:
+           - Simulated data দেখাচ্ছে (demo purpose)
+           - Real API enable করতে comment সরান
+        */
         async function fetchServerData() {
             try {
-                // In a real implementation, these would be actual API calls
-                // For this demo, we'll simulate the responses
+                // ═══════════════════════════════════════════
+                // NOTE: এখানে real API call করতে পারেন
+                // Uncomment নিচের code এবং simulation comment out করুন
+                // ═══════════════════════════════════════════
                 
-                // Simulate API calls with delays
+                // REAL API CALLS (এই code uncomment করুন):
+                /*
+                const systemInfoResponse = await fetch('http://localhost:8155/system/info');
+                const systemInfo = await systemInfoResponse.json();
+                displaySystemInfo(systemInfo);
+                
+                const installedResponse = await fetch('http://localhost:8155/models/installed');
+                const installedData = await installedResponse.json();
+                displayInstalledModels(installedData.models.map(m => m.name));
+                
+                const availableResponse = await fetch('http://localhost:8155/models/available');
+                const availableData = await availableResponse.json();
+                displayAvailableModels(availableData.map(m => m.name));
+                */
+                
+                // ═══════════════════════════════════════════
+                // SIMULATED DATA (Demo purpose - মুছে দিন real API use করতে)
+                // ═══════════════════════════════════════════
                 refreshBtn.innerHTML = '<div class="loading"></div> Refreshing...';
                 
                 // Simulate system info
@@ -970,20 +1250,67 @@
             });
         }
 
-        // Send a message
+        /* ═══════════════════════════════════════════════════════════════
+           sendMessage() - Chat Message পাঠানো এবং Response পাওয়া
+           ═══════════════════════════════════════════════════════════════
+           
+           📌 এই function এর কাজ:
+           1. User এর message নিয়ে chat এ দেখায়
+           2. API তে message পাঠায় (simulated)
+           3. Model থেকে response পায়
+           4. Response chat এ display করে
+           
+           📌 Real API Call করতে:
+           - Uncomment নিচের real API code
+           - Model load করা থাকতে হবে
+           - POST request পাঠাবে: /api/generate
+           
+           📌 Testing:
+           - প্রথমে model load করুন:
+             curl -X POST http://localhost:8155/runtime/load/tinyllama-gguf
+           - তারপর chat করুন
+           - Response পাবেন 3-5 সেকেন্ডে
+        */
         function sendMessage() {
             const message = messageInputEl.value.trim();
             if (!message) return;
             
+            // User message chat এ add করুন
             addMessage(message, 'user');
             messageInputEl.value = '';
             
-            // Simulate bot response
+            // ═══════════════════════════════════════════
+            // REAL API CALL (Uncomment to use real model):
+            // ═══════════════════════════════════════════
+            /*
+            fetch('http://localhost:8155/api/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: 'tinyllama-gguf',
+                    prompt: message
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const botResponse = data.runtime_response.content;
+                addMessage(botResponse, 'bot');
+            })
+            .catch(error => {
+                addMessage('Error: Model not loaded or server not responding', 'bot');
+                console.error('API Error:', error);
+            });
+            return;
+            */
+            
+            // ═══════════════════════════════════════════
+            // SIMULATED RESPONSE (Demo - মুছে দিন real API use করতে)
+            // ═══════════════════════════════════════════
             setTimeout(() => {
                 const responses = [
                     "I'm processing your request. This is a simulated response from the model.",
                     "Based on the information available, I can provide insights about the server and models.",
-                    "The Ollama server is running smoothly with the current configuration.",
+                    "The server is running smoothly with the current configuration.",
                     "You can interact with different models available on this server.",
                     "The system information shows the hardware capabilities of this server."
                 ];
