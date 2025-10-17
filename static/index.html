@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZombieCoder Local AI – Dashboard</title>
+  <style>
+    body{font-family: Segoe UI, Tahoma, Arial, sans-serif; margin:0; background:#0f172a; color:#e2e8f0}
+    .wrap{max-width:1100px; margin:30px auto; padding:24px}
+    .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px}
+    .card{background:#111827; border:1px solid #374151; border-radius:12px; padding:14px}
+    .muted{color:#94a3b8; font-size:13px}
+    .badge{display:inline-block; padding:1px 8px; border-radius:12px; font-size:12px; font-weight:600}
+    .ok{background:#064e3b;color:#a7f3d0}
+    .warn{background:#4b5563;color:#f3f4f6}
+    .err{background:#7f1d1d;color:#fecaca}
+    input,button,select{padding:6px 8px; border-radius:8px; border:1px solid #334155; background:#0b1220; color:#e2e8f0}
+    button{cursor:pointer}
+    pre{white-space:pre-wrap}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h2>🧠 ZombieCoder Local AI – Dashboard</h2>
+    <p class="muted">Lazy Load + Local Models + Offline‑first</p>
+
+    <div class="grid" style="margin-top:12px">
+      <div class="card">
+        <h3>Health</h3>
+        <div id="health" class="muted">loading...</div>
+      </div>
+      <div class="card">
+        <h3>System</h3>
+        <div id="system" class="muted">loading...</div>
+        <div id="tier" class="muted" style="margin-top:6px"></div>
+      </div>
+      <div class="card">
+        <h3>Installed Models (🏠)</h3>
+        <div id="installed" class="muted">loading...</div>
+      </div>
+      <div class="card">
+        <h3>Runtime</h3>
+        <div id="runtime" class="muted">loading...</div>
+        <div id="rtcfg" class="muted" style="margin-top:6px">checking runtime...</div>
+      </div>
+      <div class="card">
+        <h3>Discovery (⬇️)</h3>
+        <div id="available" class="muted">loading...</div>
+        <div style="margin-top:8px">
+          <input id="dlRepo" placeholder="repo id (e.g., TinyLlama/TinyLlama-1.1B-Chat-v1.0)" style="width:68%"/>
+          <input id="dlName" placeholder="folder (e.g., tinyllama)" style="width:28%"/>
+          <button onclick="startDownload()">Download</button>
+          <div id="dlOut" class="muted" style="margin-top:6px"></div>
+        </div>
+      </div>
+      <div class="card" style="grid-column: 1 / -1">
+        <h3>Test Chat</h3>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px">
+          <select id="chatModel"></select>
+          <input id="chatInput" placeholder="Prompt..." style="flex:1" />
+          <button onclick="sendChat()">Send</button>
+        </div>
+        <pre id="chatOut" class="muted" style="margin-top:8px">ready...</pre>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const S = {
+      health: document.getElementById('health'),
+      system: document.getElementById('system'),
+      tier: document.getElementById('tier'),
+      installed: document.getElementById('installed'),
+      runtime: document.getElementById('runtime'),
+      rtcfg: document.getElementById('rtcfg'),
+      available: document.getElementById('available'),
+      dlRepo: document.getElementById('dlRepo'),
+      dlName: document.getElementById('dlName'),
+      dlOut: document.getElementById('dlOut'),
+      chatModel: document.getElementById('chatModel'),
+      chatInput: document.getElementById('chatInput'),
+      chatOut: document.getElementById('chatOut'),
+    };
+    async function j(u, init){ const r = await fetch(u, init); if(!r.ok){ throw new Error(await r.text()); } return r.json(); }
+
+    async function loadHealth(){ const d = await j('/health'); S.health.innerHTML = `<span class="badge ${d.status==='healthy'?'ok':'err'}">${d.status}</span> · v${d.version} · port ${d.port}`; }
+    async function loadSystem(){ const d = await j('/system/info'); S.system.textContent = JSON.stringify(d, null, 2); const tn={entry_level:'Entry',mid_range:'Mid',good:'Good',high_end:'High',enthusiast:'Pro'}; S.tier.innerHTML = `Tier: <span class="badge warn">${tn[d.tier]||d.tier}</span>`; }
+    async function loadRuntime(){ const d = await j('/runtime/status'); S.runtime.textContent = JSON.stringify(d, null, 2); return d; }
+    async function loadRtCfg(){ const d = await j('/runtime/config'); S.rtcfg.textContent = JSON.stringify(d, null, 2); }
+    async function loadAvailable(){ const d = await j('/models/available'); S.available.innerHTML = d.map(m=>`<div>${m.recommended?'✅':'•'} <strong>${m.name}</strong> <span class="muted">(${m.huggingface_id})</span></div>`).join(''); }
+
+    async function loadInstalled(){
+      const inst = await j('/models/installed');
+      const rt = await j('/runtime/status');
+      const st = {}; (rt.models||[]).forEach(x=>{ st[x.model]=x; });
+      if(!inst.models?.length){ S.installed.textContent = 'No models'; updateChatModels([]); return; }
+      S.installed.innerHTML = inst.models.map(m=>{
+        const s = st[m.name];
+        const state = s? (s.status==='ready'?`Ready (Port ${s.port})`:(s.status||'Stopped')) : 'Stopped';
+        const badgeClass = s && s.status==='ready' ? 'ok' : 'warn';
+        return `<div style="display:flex;justify-content:space-between;align-items:center;margin:6px 0;gap:8px">
+                  <div><strong>${m.name}</strong> <span class="badge ${badgeClass}">${state}</span></div>
+                  <div>
+                    <button onclick=\"doLoad('${m.name}')\">Load</button>
+                    <button onclick=\"doUnload('${m.name}')\">Unload</button>
+                  </div>
+                </div>`
+      }).join('');
+      const ready = (rt.models||[]).filter(x=>x.status==='ready').map(x=>x.model);
+      updateChatModels(inst.models.map(x=>x.name), ready);
+    }
+
+    async function doLoad(name){
+      try{ const r = await j(`/runtime/load/${encodeURIComponent(name)}?threads=4`, {method:'POST'}); await refreshAll(); S.dlOut.textContent = JSON.stringify(r, null, 2); }catch(e){ S.dlOut.textContent = e.message; }
+    }
+    async function doUnload(name){
+      try{ const r = await j(`/runtime/unload/${encodeURIComponent(name)}`, {method:'POST'}); await refreshAll(); S.dlOut.textContent = JSON.stringify(r, null, 2); }catch(e){ S.dlOut.textContent = e.message; }
+    }
+    async function startDownload(){
+      const repo = S.dlRepo.value.trim(); const name = S.dlName.value.trim(); if(!repo||!name){ S.dlOut.textContent='repo id & folder required'; return; }
+      try{
+        const r = await j('/download/start', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({model_name:name, repo_id:repo})});
+        S.dlOut.textContent = JSON.stringify(r, null, 2);
+        setTimeout(refreshAll, 1500);
+      }catch(e){ S.dlOut.textContent = e.message; }
+    }
+    function updateChatModels(names, readyNames){
+      const options = (names||[]).map(n=>{
+        const isReady = readyNames?.includes(n); return `<option value="${n}">${n}${isReady?' (ready)':''}</option>`;
+      }).join('');
+      S.chatModel.innerHTML = options || '<option value="">(no models)</option>';
+    }
+    async function sendChat(){
+      const model = S.chatModel.value; const prompt = S.chatInput.value.trim(); if(!model||!prompt){ S.chatOut.textContent='select model and enter prompt'; return; }
+      try{
+        const r = await j('/api/generate', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({model, prompt})});
+        S.chatOut.textContent = JSON.stringify(r, null, 2);
+      }catch(e){ S.chatOut.textContent = e.message; }
+    }
+    async function refreshAll(){ await Promise.all([loadHealth(), loadSystem(), loadInstalled(), loadAvailable(), loadRuntime(), loadRtCfg()]); }
+    refreshAll();
+    setInterval(loadInstalled, 4000);
+  </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZombieCoder Local AI Framework</title>
+  <style>
+    body { font-family: Segoe UI, Tahoma, Arial, sans-serif; margin: 0; background: #f3f4f6; }
+    .container { max-width: 1000px; margin: 30px auto; background: #fff; padding: 24px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+    h1 { margin: 0 0 8px; color: #4f46e5; }
+    .subtitle { color: #6b7280; margin-bottom: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+    .card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
+    .badge { display: inline-block; background: #eef2ff; color: #3730a3; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    code { background: #111827; color: #d1d5db; padding: 2px 6px; border-radius: 6px; }
+    .muted { color: #6b7280; font-size: 13px; }
+    .model { border: 1px solid #e5e7eb; background: #fff; border-radius: 8px; padding: 12px; margin: 8px 0; }
+  </style>
+  <script>
+    async function loadHealth() {
+      const res = await fetch('/health');
+      const data = await res.json();
+      document.getElementById('health').innerText = JSON.stringify(data, null, 2);
+    }
+    async function loadSystem() {
+      const res = await fetch('/system/info');
+      const data = await res.json();
+      document.getElementById('system').innerText = JSON.stringify(data, null, 2);
+    }
+    async function loadModels() {
+      const res = await fetch('/models/installed');
+      const data = await res.json();
+      const box = document.getElementById('models');
+      if (!data.models || !data.models.length) { box.innerHTML = '<p class="muted">No models found</p>'; return; }
+      box.innerHTML = data.models.map(m => `
+        <div class="model">
+          <div><strong>${m.name}</strong> <span class="badge">${(m.size_mb||0).toFixed(1)} MB</span></div>
+          <div class="muted">${m.path}</div>
+        </div>
+      `).join('');
+    }
+    async function init() { await loadHealth(); await loadSystem(); await loadModels(); }
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🧠 ZombieCoder Local AI</h1>
+      <p class="subtitle">Lightweight, lazy-load ready local AI server</p>
+
+      <div class="grid">
+        <div class="card">
+          <div><strong>Health</strong></div>
+          <pre id="health" class="muted">loading...</pre>
+        </div>
+        <div class="card">
+          <div><strong>System</strong></div>
+          <pre id="system" class="muted">loading...</pre>
+        </div>
+      </div>
+
+      <h3>Installed Models</h3>
+      <div id="models"></div>
+
+      <p class="muted">Ollama-like endpoints: <code>/api/tags</code>, <code>/api/generate</code>, <code>/api/chat</code> (placeholders)</p>
+    </div>
+  </body>
+</html>
+
+

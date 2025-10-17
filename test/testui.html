@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ollama Server Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --dark: #212529;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --danger: #e63946;
+            --warning: #fca311;
+            --info: #4895ef;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fb;
+            color: var(--dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background-color: rgba(76, 201, 240, 0.1);
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .card-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background-color: rgba(67, 97, 238, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: var(--gray);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .chip {
+            display: inline-block;
+            padding: 4px 12px;
+            background-color: rgba(67, 97, 238, 0.1);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--primary);
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        .chat-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chat-interface {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background-color: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            background-color: #f1f3f5;
+            color: var(--dark);
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-input {
+            padding: 15px 20px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 24px;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .chat-input input:focus {
+            border-color: var(--primary);
+        }
+
+        .chat-input button {
+            padding: 12px 20px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+        }
+
+        .chat-input button:hover {
+            background-color: var(--secondary);
+        }
+
+        .auto-chat {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+        }
+
+        .auto-chat-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .auto-chat-buttons {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .auto-chat-btn {
+            padding: 12px 16px;
+            background-color: white;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .auto-chat-btn:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+            border-color: var(--primary);
+        }
+
+        .refresh-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background-color: white;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        .refresh-btn:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+            border-color: var(--primary);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Footer Styles */
+        .footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 15px 0;
+            margin-top: auto;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .footer-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .endpoint-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+        }
+
+        .endpoint-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 10px 15px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .endpoint-item:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .endpoint-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .endpoint-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+        }
+
+        .status-online {
+            color: var(--success);
+        }
+
+        .status-offline {
+            color: var(--danger);
+        }
+
+        .endpoint-url {
+            font-size: 12px;
+            font-family: monospace;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .endpoint-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .endpoint-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: var(--transition);
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        .endpoint-btn:hover {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .copy-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--success);
+            color: white;
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .copy-notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .footer-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+        }
+
+        .footer-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .clock {
+            font-family: monospace;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .draggable {
+            cursor: move;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">O</div>
+                <h1>Ollama Server Dashboard</h1>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>Server Online</span>
+            </div>
+        </header>
+
+        <div class="dashboard">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">System Information</h2>
+                    <div class="card-icon">💻</div>
+                </div>
+                <div class="info-grid" id="system-info">
+                    <!-- System info will be populated here -->
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Models</h2>
+                    <div class="card-icon">🤖</div>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Installed Models</span>
+                        <div id="installed-models">
+                            <!-- Installed models will be populated here -->
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Available Models</span>
+                        <div id="available-models">
+                            <!-- Available models will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-interface">
+                <div class="chat-header">
+                    <h3 class="chat-title">Chat with Model</h3>
+                    <div class="chip" id="current-model">phi-2</div>
+                </div>
+                <div class="chat-messages" id="chat-messages">
+                    <div class="message bot-message">
+                        Hello! I'm the Ollama assistant. How can I help you today?
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="message-input" placeholder="Type your message here...">
+                    <button id="send-btn">Send</button>
+                </div>
+            </div>
+
+            <div class="auto-chat">
+                <h3 class="auto-chat-title">Auto Chat Questions</h3>
+                <div class="auto-chat-buttons">
+                    <button class="auto-chat-btn" data-question="Explain how this server works.">Explain how this server works.</button>
+                    <button class="auto-chat-btn" data-question="What models are available on this server?">What models are available on this server?</button>
+                    <button class="auto-chat-btn" data-question="Tell me about the system specifications.">Tell me about the system specifications.</button>
+                    <button class="auto-chat-btn" data-question="How do I install a new model?">How do I install a new model?</button>
+                    <button class="auto-chat-btn" data-question="What is the purpose of this dashboard?">What is the purpose of this dashboard?</button>
+                </div>
+            </div>
+        </div>
+
+        <button class="refresh-btn" id="refresh-btn">
+            <span>Refresh Server Data</span>
+        </button>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <h3 class="footer-title">
+                <i class="fas fa-server"></i>
+                Server Endpoints Status
+            </h3>
+            <div class="endpoint-grid" id="endpoint-grid">
+                <!-- Endpoint status items will be populated here -->
+            </div>
+            <div class="footer-controls">
+                <div class="clock" id="real-time-clock">
+                    <!-- Real-time clock will be updated here -->
+                </div>
+                <div>
+                    <button class="footer-btn" id="toggle-footer">
+                        <i class="fas fa-eye-slash"></i>
+                        Toggle Footer
+                    </button>
+                    <button class="footer-btn" id="reset-footer">
+                        <i class="fas fa-redo"></i>
+                        Reset Layout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <div class="copy-notification" id="copy-notification">
+        <i class="fas fa-check-circle"></i>
+        <span>URL copied to clipboard!</span>
+    </div>
+
+    <script>
+        // API endpoints
+        const API_ENDPOINTS = {
+            WEB_UI: 'http://127.0.0.1:5253',
+            SYSTEM_INFO: '/system/info',
+            MODELS_AVAILABLE: '/models/available',
+            MODELS_INSTALLED: '/models/installed',
+            HEALTH: '/health'
+        };
+
+        // DOM elements
+        const systemInfoEl = document.getElementById('system-info');
+        const installedModelsEl = document.getElementById('installed-models');
+        const availableModelsEl = document.getElementById('available-models');
+        const chatMessagesEl = document.getElementById('chat-messages');
+        const messageInputEl = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+        const autoChatBtns = document.querySelectorAll('.auto-chat-btn');
+        const refreshBtn = document.getElementById('refresh-btn');
+        const currentModelEl = document.getElementById('current-model');
+        const endpointGridEl = document.getElementById('endpoint-grid');
+        const realTimeClockEl = document.getElementById('real-time-clock');
+        const toggleFooterBtn = document.getElementById('toggle-footer');
+        const resetFooterBtn = document.getElementById('reset-footer');
+        const copyNotificationEl = document.getElementById('copy-notification');
+        const footerEl = document.querySelector('.footer');
+
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchServerData();
+            initializeEndpoints();
+            updateClock();
+            setInterval(updateClock, 1000);
+            setInterval(checkEndpointStatus, 5000); // Check status every 5 seconds
+            
+            // Set up event listeners
+            sendBtn.addEventListener('click', sendMessage);
+            messageInputEl.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            autoChatBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const question = this.getAttribute('data-question');
+                    sendAutoMessage(question);
+                });
+            });
+            
+            refreshBtn.addEventListener('click', fetchServerData);
+            toggleFooterBtn.addEventListener('click', toggleFooter);
+            resetFooterBtn.addEventListener('click', resetLayout);
+            
+            // Make footer draggable
+            makeDraggable(footerEl);
+        });
+
+        // Initialize endpoints display
+        function initializeEndpoints() {
+            endpointGridEl.innerHTML = '';
+            
+            for (const [name, url] of Object.entries(API_ENDPOINTS)) {
+                const endpointItem = document.createElement('div');
+                endpointItem.className = 'endpoint-item draggable';
+                endpointItem.setAttribute('data-endpoint', name);
+                
+                const fullUrl = name === 'WEB_UI' ? url : `http://127.0.0.1:5253${url}`;
+                
+                endpointItem.innerHTML = `
+                    <div class="endpoint-info">
+                        <div class="endpoint-status">
+                            <i class="fas fa-circle status-online"></i>
+                            <span>Online</span>
+                        </div>
+                        <div class="endpoint-url">${fullUrl}</div>
+                    </div>
+                    <div class="endpoint-actions">
+                        <button class="endpoint-btn copy-btn" title="Copy URL">
+                            <i class="far fa-copy"></i>
+                        </button>
+                        <button class="endpoint-btn status-btn" title="Check Status">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                `;
+                
+                endpointGridEl.appendChild(endpointItem);
+                
+                // Add event listeners for the buttons
+                const copyBtn = endpointItem.querySelector('.copy-btn');
+                const statusBtn = endpointItem.querySelector('.status-btn');
+                
+                copyBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    copyToClipboard(fullUrl);
+                });
+                
+                statusBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    checkSingleEndpointStatus(name, fullUrl, endpointItem);
+                });
+            }
+        }
+
+        // Check status of all endpoints
+        async function checkEndpointStatus() {
+            for (const [name, url] of Object.entries(API_ENDPOINTS)) {
+                const fullUrl = name === 'WEB_UI' ? url : `http://127.0.0.1:5253${url}`;
+                const endpointItem = document.querySelector(`[data-endpoint="${name}"]`);
+                
+                if (endpointItem) {
+                    await checkSingleEndpointStatus(name, fullUrl, endpointItem, false);
+                }
+            }
+        }
+
+        // Check status of a single endpoint
+        async function checkSingleEndpointStatus(name, url, endpointItem, showNotification = true) {
+            const statusEl = endpointItem.querySelector('.endpoint-status');
+            const statusIcon = statusEl.querySelector('i');
+            const statusText = statusEl.querySelector('span');
+            const statusBtn = endpointItem.querySelector('.status-btn');
+            
+            // Show loading state
+            statusBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            try {
+                // In a real implementation, this would be an actual fetch request
+                // For demo purposes, we'll simulate the response
+                const isOnline = Math.random() > 0.2; // 80% chance of being online
+                
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                if (isOnline) {
+                    statusIcon.className = 'fas fa-circle status-online';
+                    statusText.textContent = 'Online';
+                    if (showNotification) {
+                        showCopyNotification(`${name} is online`);
+                    }
+                } else {
+                    statusIcon.className = 'fas fa-circle status-offline';
+                    statusText.textContent = 'Offline';
+                    if (showNotification) {
+                        showCopyNotification(`${name} is offline`);
+                    }
+                }
+            } catch (error) {
+                statusIcon.className = 'fas fa-circle status-offline';
+                statusText.textContent = 'Offline';
+                if (showNotification) {
+                    showCopyNotification(`Error checking ${name} status`);
+                }
+            } finally {
+                statusBtn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+            }
+        }
+
+        // Copy URL to clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showCopyNotification('URL copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                showCopyNotification('Failed to copy URL');
+            });
+        }
+
+        // Show copy notification
+        function showCopyNotification(message) {
+            const notification = copyNotificationEl;
+            notification.querySelector('span').textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Update real-time clock
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { 
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const dateString = now.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+            
+            realTimeClockEl.textContent = `${dateString} ${timeString}`;
+        }
+
+        // Toggle footer visibility
+        function toggleFooter() {
+            footerEl.classList.toggle('hidden');
+            toggleFooterBtn.innerHTML = footerEl.classList.contains('hidden') ? 
+                '<i class="fas fa-eye"></i> Show Footer' : 
+                '<i class="fas fa-eye-slash"></i> Hide Footer';
+        }
+
+        // Reset layout to default
+        function resetLayout() {
+            footerEl.style.position = '';
+            footerEl.style.top = '';
+            footerEl.style.left = '';
+            footerEl.style.width = '';
+            showCopyNotification('Layout reset to default');
+        }
+
+        // Make element draggable
+        function makeDraggable(element) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            
+            element.onmousedown = dragMouseDown;
+            
+            function dragMouseDown(e) {
+                if (!e.target.classList.contains('draggable') && !e.target.closest('.draggable')) {
+                    return;
+                }
+                
+                e.preventDefault();
+                // Get the mouse cursor position at startup
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                // Call a function whenever the cursor moves
+                document.onmousemove = elementDrag;
+            }
+            
+            function elementDrag(e) {
+                e.preventDefault();
+                // Calculate the new cursor position
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                // Set the element's new position
+                element.style.position = 'fixed';
+                element.style.top = (element.offsetTop - pos2) + "px";
+                element.style.left = (element.offsetLeft - pos1) + "px";
+                element.style.width = '400px'; // Set a fixed width when dragging
+            }
+            
+            function closeDragElement() {
+                // Stop moving when mouse button is released
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+
+        // Fetch server data
+        async function fetchServerData() {
+            try {
+                // In a real implementation, these would be actual API calls
+                // For this demo, we'll simulate the responses
+                
+                // Simulate API calls with delays
+                refreshBtn.innerHTML = '<div class="loading"></div> Refreshing...';
+                
+                // Simulate system info
+                setTimeout(() => {
+                    const systemInfo = {
+                        cpu: 'Intel Core i7-12700K',
+                        ram: '32GB DDR4',
+                        gpu: 'NVIDIA RTX 4070 Ti',
+                        os: 'Windows 11'
+                    };
+                    displaySystemInfo(systemInfo);
+                }, 500);
+                
+                // Simulate installed models
+                setTimeout(() => {
+                    const installedModels = ['phi-2', 'llama2', 'mistral'];
+                    displayInstalledModels(installedModels);
+                }, 800);
+                
+                // Simulate available models
+                setTimeout(() => {
+                    const availableModels = ['llama2', 'mistral', 'codellama', 'vicuna'];
+                    displayAvailableModels(availableModels);
+                }, 1000);
+                
+                // Reset refresh button
+                setTimeout(() => {
+                    refreshBtn.innerHTML = 'Refresh Server Data';
+                    addMessage('System data has been refreshed.', 'bot');
+                }, 1200);
+                
+            } catch (error) {
+                console.error('Error fetching server data:', error);
+                addMessage('Error fetching server data. Please try again.', 'bot');
+                refreshBtn.innerHTML = 'Refresh Server Data';
+            }
+        }
+
+        // Display system information
+        function displaySystemInfo(info) {
+            systemInfoEl.innerHTML = `
+                <div class="info-item">
+                    <span class="info-label">CPU</span>
+                    <span class="info-value">${info.cpu}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">RAM</span>
+                    <span class="info-value">${info.ram}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">GPU</span>
+                    <span class="info-value">${info.gpu}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">OS</span>
+                    <span class="info-value">${info.os}</span>
+                </div>
+            `;
+        }
+
+        // Display installed models
+        function displayInstalledModels(models) {
+            installedModelsEl.innerHTML = '';
+            models.forEach(model => {
+                const chip = document.createElement('span');
+                chip.className = 'chip';
+                chip.textContent = model;
+                installedModelsEl.appendChild(chip);
+            });
+            
+            // Update current model if phi-2 is installed
+            if (models.includes('phi-2')) {
+                currentModelEl.textContent = 'phi-2';
+            }
+        }
+
+        // Display available models
+        function displayAvailableModels(models) {
+            availableModelsEl.innerHTML = '';
+            models.forEach(model => {
+                const chip = document.createElement('span');
+                chip.className = 'chip';
+                chip.textContent = model;
+                availableModelsEl.appendChild(chip);
+            });
+        }
+
+        // Send a message
+        function sendMessage() {
+            const message = messageInputEl.value.trim();
+            if (!message) return;
+            
+            addMessage(message, 'user');
+            messageInputEl.value = '';
+            
+            // Simulate bot response
+            setTimeout(() => {
+                const responses = [
+                    "I'm processing your request. This is a simulated response from the model.",
+                    "Based on the information available, I can provide insights about the server and models.",
+                    "The Ollama server is running smoothly with the current configuration.",
+                    "You can interact with different models available on this server.",
+                    "The system information shows the hardware capabilities of this server."
+                ];
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                addMessage(randomResponse, 'bot');
+            }, 1000);
+        }
+
+        // Send an auto-generated message
+        function sendAutoMessage(question) {
+            addMessage(question, 'user');
+            
+            // Simulate bot response based on the question
+            setTimeout(() => {
+                let response = "";
+                
+                if (question.includes("server works")) {
+                    response = "This server runs Ollama, which allows you to run large language models locally. The dashboard displays system information, available models, and provides a chat interface to interact with the models.";
+                } else if (question.includes("models are available")) {
+                    response = "Based on the server data, the available models include phi-2, llama2, mistral, and others. You can install additional models through the Ollama interface.";
+                } else if (question.includes("system specifications")) {
+                    response = "The system is running on an Intel Core i7 processor with 32GB RAM and an NVIDIA RTX 4070 Ti GPU. This configuration provides excellent performance for running language models.";
+                } else if (question.includes("install a new model")) {
+                    response = "To install a new model, you can use the Ollama CLI with the command 'ollama pull <model-name>'. The model will then be available in the installed models list.";
+                } else if (question.includes("purpose of this dashboard")) {
+                    response = "This dashboard provides a user-friendly interface to monitor your Ollama server, view system resources, manage models, and interact with AI models through a chat interface.";
+                } else {
+                    response = "I've received your question. This is a simulated response from the model running on this Ollama server.";
+                }
+                
+                addMessage(response, 'bot');
+            }, 1000);
+        }
+
+        // Add a message to the chat
+        function addMessage(text, sender) {
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${sender}-message`;
+            messageEl.textContent = text;
+            chatMessagesEl.appendChild(messageEl);
+            chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+        }
+    </script>
+</body>
+</html>

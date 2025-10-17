@@ -1,0 +1,71 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Project Specific
+*.log
+logs/
+data/*.db
+data/*.db-journal
+models/*/
+!models/.gitkeep
+models/*.log
+models/download_*.log
+models/models_registry.json
+config/llama.cpp/server.exe
+config/llama.cpp/server
+
+# Test Results
+test/test_report.json
+test/core_test_report.json
+
+# Temporary Files
+*.tmp
+*.temp
+.cache/
+.pytest_cache/
+
+# System Files
+Thumbs.db
+.DS_Store
+Desktop.ini
+
+# Sensitive
+.env
+*.key
+*.pem
+token.txt
+auth/
+
