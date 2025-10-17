@@ -623,7 +623,7 @@
     <script>
         // API endpoints
         const API_ENDPOINTS = {
-            WEB_UI: 'http://127.0.0.1:5253',
+            WEB_UI: 'http://127.0.0.1:8155',
             SYSTEM_INFO: '/system/info',
             MODELS_AVAILABLE: '/models/available',
             MODELS_INSTALLED: '/models/installed',
@@ -687,7 +687,7 @@
                 endpointItem.className = 'endpoint-item draggable';
                 endpointItem.setAttribute('data-endpoint', name);
                 
-                const fullUrl = name === 'WEB_UI' ? url : `http://127.0.0.1:5253${url}`;
+                const fullUrl = name === 'WEB_UI' ? url : `http://127.0.0.1:8155${url}`;
                 
                 endpointItem.innerHTML = `
                     <div class="endpoint-info">
@@ -728,7 +728,7 @@
         // Check status of all endpoints
         async function checkEndpointStatus() {
             for (const [name, url] of Object.entries(API_ENDPOINTS)) {
-                const fullUrl = name === 'WEB_UI' ? url : `http://127.0.0.1:5253${url}`;
+                const fullUrl = name === 'WEB_UI' ? url : `http://127.0.0.1:8155${url}`;
                 const endpointItem = document.querySelector(`[data-endpoint="${name}"]`);
                 
                 if (endpointItem) {
