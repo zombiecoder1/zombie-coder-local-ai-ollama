@@ -1,8 +1,6 @@
-# 🧟 ZombieCoder Local AI - Ollama Compatible
+# 🧟 ZombieCoder Local AI Framework
 
-**যেখানে কোড ও কথা বলে** | Where Code Meets Conversation
-
-A lightweight, production-ready local AI framework with Ollama-compatible API endpoints. Run powerful language models locally with minimal setup.
+**যেখানে কোড ও কথা বলে** | A lightweight local AI framework for running language models locally
 
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](./test)
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://python.org)
@@ -13,8 +11,8 @@ A lightweight, production-ready local AI framework with Ollama-compatible API en
 ## ✨ Features
 
 ### 🚀 Core Capabilities
-- **Ollama-Compatible API** - Drop-in replacement for Ollama endpoints
-- **Multiple Model Support** - GGUF format models (TinyLlama, Phi-2, etc.)
+- **Local AI Models** - Run GGUF format models (TinyLlama, Phi-2, etc.)
+- **REST API** - FastAPI-based server with comprehensive endpoints
 - **Session Management** - Track conversation context across requests
 - **Model Lifecycle** - Lazy loading, auto-unload, idle detection
 - **Download Manager** - Direct HuggingFace Hub integration
@@ -24,8 +22,8 @@ A lightweight, production-ready local AI framework with Ollama-compatible API en
 - ✅ **100% Local** - No cloud dependencies, complete privacy
 - ✅ **Lightweight** - ~15MB framework, models load on-demand
 - ✅ **Fast** - 14+ tokens/sec on CPU, faster with GPU
-- ✅ **Easy Setup** - Python + llama.cpp, no complex dependencies
-- ✅ **Production Ready** - Full test suite, error handling, logging
+- ✅ **Easy Setup** - Python + llama.cpp, minimal dependencies
+- ✅ **Production Ready** - Full test suite (100% passing), error handling, logging
 
 ---
 
@@ -58,11 +56,9 @@ pip install -r requirements.txt
 ```
 
 ### 3. Download llama.cpp Runtime
-The framework uses llama.cpp for inference. Download from:
-- **Windows:** [llama.cpp releases](https://github.com/ggerganov/llama.cpp/releases)
-- **Linux/Mac:** Build from source or use pre-built binaries
+Download llama.cpp from [official releases](https://github.com/ggerganov/llama.cpp/releases)
 
-Place `server.exe` (Windows) or `server` (Linux/Mac) in:
+Place binary in:
 ```
 C:\model\config\llama.cpp\server.exe  (Windows)
 ~/model/config/llama.cpp/server       (Linux/Mac)
@@ -73,7 +69,7 @@ C:\model\config\llama.cpp\server.exe  (Windows)
 python model_server.py
 ```
 
-Server starts at: http://localhost:8155
+Server starts at: **http://localhost:8155**
 
 ---
 
@@ -81,7 +77,6 @@ Server starts at: http://localhost:8155
 
 ### Download a Model
 ```bash
-# Using API
 curl -X POST http://localhost:8155/download/start \
   -H "Content-Type: application/json" \
   -d '{
@@ -89,83 +84,37 @@ curl -X POST http://localhost:8155/download/start \
     "repo_id": "TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF"
   }'
 
-# Check download progress
+# Check progress
 curl http://localhost:8155/download/status/tinyllama-gguf
 ```
 
-### Load Model
+### Load & Use Model
 ```bash
+# Load model
 curl -X POST http://localhost:8155/runtime/load/tinyllama-gguf?threads=4
-```
 
-### Generate Text
-```bash
+# Generate text
 curl -X POST http://localhost:8155/api/generate \
   -H "Content-Type: application/json" \
   -d '{
     "model": "tinyllama-gguf",
-    "prompt": "What is the meaning of life?"
+    "prompt": "Write a Python hello world program"
   }'
-```
 
-### Unload Model
-```bash
+# Unload model
 curl -X POST http://localhost:8155/runtime/unload/tinyllama-gguf
 ```
 
 ---
 
-## 📚 API Documentation
+## 📚 Documentation
 
-### Ollama-Compatible Endpoints
+Detailed documentation available in [`doc/`](./doc/) folder:
 
-#### List Models
-```bash
-GET /api/tags
-```
-
-#### Generate Text
-```bash
-POST /api/generate
-{
-  "model": "model-name",
-  "prompt": "Your prompt here",
-  "stream": false
-}
-```
-
-### Extended Endpoints
-
-#### System Info
-```bash
-GET /health              # Server health
-GET /system/info         # Hardware detection
-GET /models/installed    # List local models
-GET /models/available    # Recommended models
-```
-
-#### Runtime Control
-```bash
-GET  /runtime/status           # Current state
-POST /runtime/load/{model}     # Load model
-POST /runtime/unload/{model}   # Unload model
-```
-
-#### Session Management
-```bash
-POST /api/session/start              # Create session
-GET  /api/session/status/{id}        # Check session
-POST /api/session/end/{id}           # End session
-```
-
-#### Download Manager
-```bash
-POST /download/start                 # Start download
-GET  /download/status/{model}        # Check progress
-POST /download/cancel/{model}        # Cancel download
-```
-
-Full API documentation: [API.md](docs/API.md)
+- **[API Documentation](./doc/README.md)** - Complete API reference
+- **[System Integration](./doc/SYSTEMS_INTEGRATION.md)** - Integration guide
+- **[Current Capabilities](./doc/CURRENT_CAPABILITIES.md)** - Features & limitations
+- **[Verification Report](./doc/VERIFICATION_COMPLETE.md)** - Test results
 
 ---
 
@@ -177,20 +126,62 @@ cd test
 python run_core_tests.py
 ```
 
-### Individual Tests
-```bash
-python test/01_preflight_check.py       # System health
-python test/02_model_lifecycle.py       # Model operations
-python test/03_api_standard_check.py    # API compatibility
-python test/04_ui_data_integrity.py     # Data validation
-python test/05_integrated_session_test.py  # Session management
-```
+### Test Results
+✅ **5/5 Core Tests Passing (100%)**
 
-**Latest Test Results:** ✅ 5/5 Core Tests Passing (100%)
+- `01_preflight_check.py` - System health check
+- `02_model_lifecycle.py` - Model operations
+- `03_api_standard_check.py` - API compatibility
+- `04_ui_data_integrity.py` - Data validation
+- `05_integrated_session_test.py` - Session management
+
+**Test Coverage:** See [`test/README.md`](./test/README.md)
 
 ---
 
-## 📊 Performance
+## 📊 API Endpoints
+
+### System Info
+```bash
+GET  /health              # Server health
+GET  /system/info         # Hardware detection
+GET  /models/installed    # List local models
+GET  /models/available    # Recommended models
+```
+
+### Runtime Control
+```bash
+GET  /runtime/status           # Current state
+POST /runtime/load/{model}     # Load model
+POST /runtime/unload/{model}   # Unload model
+GET  /runtime/config           # Configuration
+```
+
+### Text Generation
+```bash
+POST /api/generate             # Generate text
+GET  /api/tags                 # List models
+```
+
+### Session Management
+```bash
+POST /api/session/start              # Create session
+GET  /api/session/status/{id}        # Check session
+POST /api/session/end/{id}           # End session
+```
+
+### Download Manager
+```bash
+POST /download/start                 # Start download
+GET  /download/status/{model}        # Check progress
+POST /download/cancel/{model}        # Cancel download
+```
+
+Full API docs: [`doc/README.md`](./doc/README.md)
+
+---
+
+## 📈 Performance
 
 ### Benchmarks (TinyLlama 1.1B, Q2_K)
 
@@ -201,66 +192,39 @@ python test/05_integrated_session_test.py  # Session management
 | Memory Usage | 2-3 GB | 1-2 GB |
 | First Token | ~60ms | ~20ms |
 
-**System:** Intel i5-4590, 16GB RAM, Windows 10  
-**GPU:** Intel HD Graphics 4400 (integrated)
+**Tested on:** Intel i5-4590, 16GB RAM, Windows 10
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────┐
-│          FastAPI Server (Port 8155)         │
-├─────────────────────────────────────────────┤
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐ │
-│  │ Ollama   │  │ Download │  │ Session  │ │
-│  │ API      │  │ Manager  │  │ Manager  │ │
-│  └──────────┘  └──────────┘  └──────────┘ │
-├─────────────────────────────────────────────┤
-│        Runtime Orchestrator                 │
-│  (Model Loading, Process Management)        │
-├─────────────────────────────────────────────┤
-│         llama.cpp Server (Dynamic)          │
-│              (Port 8080+)                   │
-└─────────────────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│      FastAPI Server (Port 8155)         │
+├─────────────────────────────────────────┤
+│  ┌────────┐  ┌────────┐  ┌──────────┐ │
+│  │ Models │  │Download│  │ Session  │ │
+│  │ API    │  │Manager │  │ Manager  │ │
+│  └────────┘  └────────┘  └──────────┘ │
+├─────────────────────────────────────────┤
+│        Runtime Orchestrator             │
+│  (Model Loading, Process Management)    │
+├─────────────────────────────────────────┤
+│      llama.cpp Server (Dynamic)         │
+│           (Port 8080+)                  │
+└─────────────────────────────────────────┘
 ```
-
-**Components:**
-- **API Gateway:** FastAPI-based REST API
-- **Runtime Orchestrator:** Model lifecycle management
-- **Download Manager:** HuggingFace Hub integration
-- **Session Manager:** Conversation state tracking
-- **Model Registry:** Local model database
 
 ---
 
-## 🔧 Configuration
-
-### Environment Variables
-```bash
-MODEL_SERVER_PORT=8155          # API server port
-MODELS_DIR=/path/to/models      # Models directory
-HUGGINGFACE_HUB_TOKEN=your_token  # HF token (for private models)
-```
-
-### Model Recommendations
-
-| System | Recommended Model | Quantization | RAM | Speed |
-|--------|------------------|--------------|-----|-------|
-| Entry (8GB) | TinyLlama 1.1B | Q2_K | 2GB | 10-15 t/s |
-| Good (16GB) | Phi-2 2.7B | Q4_K_M | 4GB | 8-12 t/s |
-| High (32GB) | Llama-2 7B | Q5_K_M | 8GB | 5-10 t/s |
-
----
-
-## 📝 Examples
+## 💻 Usage Examples
 
 ### Python Client
 ```python
 import requests
 
 # Load model
-response = requests.post(
+requests.post(
     "http://localhost:8155/runtime/load/tinyllama-gguf",
     params={"threads": 4}
 )
@@ -270,11 +234,11 @@ response = requests.post(
     "http://localhost:8155/api/generate",
     json={
         "model": "tinyllama-gguf",
-        "prompt": "Explain quantum computing in simple terms"
+        "prompt": "Explain quantum computing"
     }
 )
 
-print(response.json())
+print(response.json()['runtime_response']['content'])
 ```
 
 ### JavaScript Client
@@ -293,7 +257,26 @@ const data = await response.json();
 console.log(data.runtime_response.content);
 ```
 
-More examples: [examples/](examples/)
+More examples: [`examples/`](./examples/)
+
+---
+
+## 🔧 Configuration
+
+### Environment Variables
+```bash
+MODEL_SERVER_PORT=8155          # API server port
+MODELS_DIR=/path/to/models      # Models directory
+HUGGINGFACE_HUB_TOKEN=token     # HF token (optional)
+```
+
+### Recommended Models
+
+| System RAM | Model | Quantization | Speed |
+|------------|-------|--------------|-------|
+| 8 GB | TinyLlama 1.1B | Q2_K | 10-15 t/s |
+| 16 GB | Phi-2 2.7B | Q4_K_M | 8-12 t/s |
+| 32 GB | Llama-2 7B | Q5_K_M | 5-10 t/s |
 
 ---
 
@@ -310,21 +293,50 @@ curl http://localhost:8155/models/installed
 
 ### Slow Performance
 - Use quantized models (Q2_K, Q4_K)
-- Enable GPU acceleration (if available)
 - Increase thread count: `?threads=8`
+- Enable GPU acceleration (if available)
 
 ### Out of Memory
 - Use smaller quantization (Q2_K instead of Q8_0)
-- Use smaller model (TinyLlama instead of Phi-2)
+- Use smaller model (TinyLlama vs Phi-2)
 - Close other applications
 
-Common issues: [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
+---
+
+## 📁 Project Structure
+
+```
+C:\model/
+├── doc/                    # 📚 Documentation
+│   ├── README.md          # API reference
+│   ├── SYSTEMS_INTEGRATION.md
+│   ├── CURRENT_CAPABILITIES.md
+│   └── VERIFICATION_COMPLETE.md
+├── test/                   # 🧪 Test suite
+│   ├── 01_preflight_check.py
+│   ├── 02_model_lifecycle.py
+│   ├── 03_api_standard_check.py
+│   ├── 04_ui_data_integrity.py
+│   ├── 05_integrated_session_test.py
+│   ├── run_core_tests.py
+│   └── README.md
+├── static/                 # 🌐 Web UI
+├── models/                 # 🤖 Downloaded models
+├── logs/                   # 📝 Server logs
+├── data/                   # 💾 Database
+├── model_server.py        # 🚀 Main server
+├── router.py              # 🔄 Runtime orchestrator
+├── downloader.py          # ⬇️ Download manager
+├── db_manager.py          # 💾 Model registry
+├── system_detector.py     # 🖥️ Hardware detection
+└── requirements.txt       # 📦 Dependencies
+```
 
 ---
 
 ## 🤝 Contributing
 
-Contributions welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md)
+Contributions welcome! See [`CONTRIBUTING.md`](./CONTRIBUTING.md)
 
 ### Development Setup
 ```bash
@@ -333,17 +345,13 @@ pip install -r requirements-dev.txt
 
 # Run tests
 cd test && python run_all_tests.py
-
-# Check code style
-black . --check
-pylint model_server.py
 ```
 
 ---
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file
+MIT License - see [`LICENSE`](./LICENSE)
 
 ---
 
@@ -354,26 +362,28 @@ MIT License - see [LICENSE](LICENSE) file
 **Website:** https://zombiecoder.my.id/  
 **Contact:** infi@zombiecoder.my.id
 
-### Technologies Used
+### Technologies
 - [llama.cpp](https://github.com/ggerganov/llama.cpp) - Inference engine
 - [FastAPI](https://fastapi.tiangolo.com/) - Web framework
 - [HuggingFace Hub](https://huggingface.co/) - Model repository
-- [Ollama](https://ollama.ai/) - API inspiration
-
----
-
-## 🌟 Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=zombiecoder1/zombie-coder-local-ai-ollama&type=Date)](https://star-history.com/#zombiecoder1/zombie-coder-local-ai-ollama&Date)
 
 ---
 
 ## 📞 Support
 
-- **Issues:** [GitHub Issues](https://github.com/zombiecoder1/zombie-coder-local-ai-ollama/issues)
+- **GitHub Issues:** [Report issues](https://github.com/zombiecoder1/zombie-coder-local-ai-ollama/issues)
 - **Email:** infi@zombiecoder.my.id
 - **Phone:** +880 1323-626282
-- **Address:** 235 south pirarbag, Amtala Bazar, Mirpur - 60 feet
+
+---
+
+## 🎯 Quick Links
+
+- 📚 [Full Documentation](./doc/)
+- 🧪 [Test Suite](./test/)
+- 🌐 [Web UI](http://localhost:8155)
+- 📊 [API Reference](./doc/README.md)
+- ✅ [Test Results](./doc/VERIFICATION_COMPLETE.md)
 
 ---
 
