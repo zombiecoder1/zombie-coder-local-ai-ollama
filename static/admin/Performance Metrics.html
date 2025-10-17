@@ -1,0 +1,93 @@
+<section id="performance-metrics" class="content-section">
+    <div class="card-grid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">AI Response Times</h3>
+                <div class="card-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+            <div class="card-content">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+                    <span>Local Ollama:</span>
+                    <span class="stat-value success">120ms</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+                    <span>OpenRouter:</span>
+                    <span class="stat-value warning">450ms</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>HuggingFace:</span>
+                    <span class="stat-value danger">680ms</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Memory Usage</h3>
+                <div class="card-icon">
+                    <i class="fas fa-memory"></i>
+                </div>
+            </div>
+            <div class="card-content">
+                <div style="margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Ollama Models:</span>
+                        <span>2.1GB</span>
+                    </div>
+                    <div style="height: 8px; background: var(--bg-tertiary); border-radius: 4px; margin-top: 4px;">
+                        <div style="height: 100%; width: 70%; background: var(--accent-primary); border-radius: 4px;"></div>
+                    </div>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>System Cache:</span>
+                        <span>512MB</span>
+                    </div>
+                    <div style="height: 8px; background: var(--bg-tertiary); border-radius: 4px; margin-top: 4px;">
+                        <div style="height: 100%; width: 35%; background: var(--accent-warning); border-radius: 4px;"></div>
+                    </div>
+                </div>
+                <div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Application:</span>
+                        <span>256MB</span>
+                    </div>
+                    <div style="height: 8px; background: var(--bg-tertiary); border-radius: 4px; margin-top: 4px;">
+                        <div style="height: 100%; width: 20%; background: var(--accent-success); border-radius: 4px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Performance Analytics</h3>
+            <div class="card-actions">
+                <select class="form-control" style="width: auto;">
+                    <option>Last 24 hours</option>
+                    <option>Last 7 days</option>
+                    <option>Last 30 days</option>
+                </select>
+            </div>
+        </div>
+        <div class="card-content">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div>
+                    <h4>CPU Usage Trend</h4>
+                    <div style="height: 200px; background: var(--bg-tertiary); border-radius: 6px; padding: 16px;">
+                        <!-- CPU usage chart placeholder -->
+                    </div>
+                </div>
+                <div>
+                    <h4>Memory Usage Trend</h4>
+                    <div style="height: 200px; background: var(--bg-tertiary); border-radius: 6px; padding: 16px;">
+                        <!-- Memory usage chart placeholder -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

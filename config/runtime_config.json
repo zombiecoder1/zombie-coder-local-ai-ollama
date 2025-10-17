@@ -1,0 +1,36 @@
+{
+  "runtime_rules": {
+    "gguf": {
+      "engine": "llama.cpp",
+      "command": "config/llama.cpp/server.exe",
+      "args": [
+        "--model", "{model_path}",
+        "--port", "{port}",
+        "--threads", "{threads}",
+        "--ctx-size", "2048"
+      ],
+      "description": "llama.cpp server for GGUF models"
+    },
+    "safetensors": {
+      "engine": "transformers",
+      "command": "python",
+      "args": [
+        "scripts/transformers_runner.py",
+        "--model", "{model_path}",
+        "--port", "{port}",
+        "--device", "auto"
+      ],
+      "description": "Python transformers for SafeTensors models"
+    }
+  },
+  "format_detection": {
+    "priority": ["gguf", "safetensors"],
+    "gguf_extensions": [".gguf"],
+    "safetensors_extensions": [".safetensors", ".bin"]
+  },
+  "fallback": {
+    "enabled": true,
+    "default_runtime": "transformers"
+  }
+}
+

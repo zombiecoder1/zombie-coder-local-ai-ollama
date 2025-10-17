@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZombieCoder AI Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f7f7f8;
+            color: #2d3748;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #ffffff;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand {
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .brand h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a202c;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand p {
+            font-size: 14px;
+            color: #718096;
+            margin-top: 4px;
+        }
+
+        .nav-menu {
+            padding: 20px;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #4a5568;
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            background: #f7fafc;
+            color: #2d3748;
+        }
+
+        .nav-item.active {
+            background: #edf2f7;
+            color: #2d3748;
+            font-weight: 500;
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            opacity: 0.7;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+        }
+
+        .header {
+            padding: 20px 30px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .model-selector {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .model-dropdown {
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: #ffffff;
+            color: #2d3748;
+            font-size: 14px;
+            min-width: 200px;
+            cursor: pointer;
+        }
+
+        .model-dropdown:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .context-info {
+            background: #f7fafc;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .settings-btn {
+            padding: 8px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: 6px;
+            color: #718096;
+            transition: all 0.2s;
+        }
+
+        .settings-btn:hover {
+            background: #f7fafc;
+            color: #2d3748;
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .welcome-section {
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .welcome-section h2 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 12px;
+        }
+
+        .welcome-section p {
+            font-size: 18px;
+            color: #718096;
+            margin-bottom: 40px;
+        }
+
+        /* Model Inputs */
+        .model-inputs {
+            width: 100%;
+            max-width: 800px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.2s;
+        }
+
+        .input-group:hover {
+            border-color: #cbd5e0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .input-group.active {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .model-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .badge-gguf {
+            background: #e6fffa;
+            color: #234e52;
+        }
+
+        .badge-safetensors {
+            background: #fef5e7;
+            color: #92400e;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #2d3748;
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-field::placeholder {
+            color: #a0aec0;
+        }
+
+        .send-btn {
+            padding: 8px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+
+        .send-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .send-btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Single Input Mode */
+        .single-input-mode {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .main-input {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .input-container {
+            display: flex;
+            align-items: flex-end;
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px;
+            transition: all 0.2s;
+        }
+
+        .input-container:focus-within {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .main-input-field {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            color: #2d3748;
+            resize: none;
+            min-height: 24px;
+            max-height: 120px;
+            font-family: inherit;
+        }
+
+        .main-input-field::placeholder {
+            color: #a0aec0;
+        }
+
+        .input-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 12px;
+        }
+
+        .attach-btn, .voice-btn {
+            padding: 8px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: 6px;
+            color: #718096;
+            transition: all 0.2s;
+        }
+
+        .attach-btn:hover, .voice-btn:hover {
+            background: #f7fafc;
+            color: #2d3748;
+        }
+
+        .send-main-btn {
+            padding: 10px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .send-main-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .send-main-btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .input-help {
+            text-align: center;
+            font-size: 12px;
+            color: #a0aec0;
+            margin-top: 8px;
+        }
+
+        /* Mode Toggle */
+        .mode-toggle {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .toggle-btn {
+            padding: 8px 16px;
+            border: 1px solid #e2e8f0;
+            background: #ffffff;
+            color: #718096;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .toggle-btn:first-child {
+            border-radius: 8px 0 0 8px;
+        }
+
+        .toggle-btn:last-child {
+            border-radius: 0 8px 8px 0;
+        }
+
+        .toggle-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        /* Status Indicators */
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-online {
+            background: #48bb78;
+        }
+
+        .status-offline {
+            background: #e53e3e;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                overflow-x: auto;
+            }
+
+            .brand {
+                border-right: 1px solid #e2e8f0;
+                border-bottom: none;
+                min-width: 200px;
+            }
+
+            .nav-menu {
+                display: flex;
+                gap: 8px;
+                padding: 12px;
+                overflow-x: auto;
+            }
+
+            .nav-item {
+                white-space: nowrap;
+                margin-bottom: 0;
+            }
+
+            .model-inputs {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="brand">
+                <h1>ZombieCoder</h1>
+                <p>Local AI Assistant</p>
+            </div>
+            
+            <div class="nav-menu">
+                <a href="#" class="nav-item active" onclick="showNewChat()">
+                    <span class="nav-icon">✏️</span>
+                    New chat
+                </a>
+                <a href="#" class="nav-item" onclick="showSearch()">
+                    <span class="nav-icon">🔍</span>
+                    Search conversations
+                </a>
+                <a href="#" class="nav-item" onclick="showImport()">
+                    <span class="nav-icon">⬆️</span>
+                    Import conversations
+                </a>
+                <a href="#" class="nav-item" onclick="showExport()">
+                    <span class="nav-icon">⬇️</span>
+                    Export all conversations
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <div class="model-selector">
+                    <select class="model-dropdown" id="modelDropdown" onchange="onModelChange()">
+                        <option value="">Loading models...</option>
+                    </select>
+                    <div class="context-info" id="contextInfo">ctx: 4,096</div>
+                </div>
+                
+                <button class="settings-btn" onclick="showSettings()">
+                    <span class="nav-icon">⚙️</span>
+                </button>
+            </div>
+
+            <div class="chat-area">
+                <div class="welcome-section">
+                    <h2>ZombieCoder AI Assistant</h2>
+                    <p>How can I help you today?</p>
+                    
+                    <!-- Mode Toggle -->
+                    <div class="mode-toggle">
+                        <button class="toggle-btn active" onclick="setMode('single')">Single Input</button>
+                        <button class="toggle-btn" onclick="setMode('multi')">Multi Model</button>
+                    </div>
+
+                    <!-- Single Input Mode -->
+                    <div class="single-input-mode" id="singleInputMode">
+                        <div class="main-input">
+                            <div class="input-container">
+                                <textarea 
+                                    class="main-input-field" 
+                                    id="mainInput" 
+                                    placeholder="Ask anything..."
+                                    rows="1"
+                                    onkeydown="handleMainInputKeydown(event)"
+                                ></textarea>
+                                <div class="input-actions">
+                                    <button class="attach-btn" title="Attach files">
+                                        📎
+                                    </button>
+                                    <button class="voice-btn" title="Voice input">
+                                        🎤
+                                    </button>
+                                    <button class="send-main-btn" onclick="sendMainMessage()" id="sendMainBtn">
+                                        Send
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="input-help">
+                                Press Enter to send, Shift + Enter for new line
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Multi Model Input Mode -->
+                    <div class="model-inputs" id="multiInputMode" style="display: none;">
+                        <div class="input-group" id="tinyllamaInput">
+                            <div class="input-label">
+                                TinyLlama (GGUF)
+                                <span class="model-badge badge-gguf">GGUF</span>
+                                <span class="status-indicator status-offline" id="tinyllamaStatus"></span>
+                            </div>
+                            <textarea 
+                                class="input-field" 
+                                id="tinyllamaText"
+                                placeholder="Ask TinyLlama anything..."
+                            ></textarea>
+                            <button class="send-btn" onclick="sendToModel('tinyllama')" id="tinyllamaBtn">
+                                Send to TinyLlama
+                            </button>
+                        </div>
+
+                        <div class="input-group" id="phi2Input">
+                            <div class="input-label">
+                                Phi-2 (SafeTensors)
+                                <span class="model-badge badge-safetensors">SafeTensors</span>
+                                <span class="status-indicator status-offline" id="phi2Status"></span>
+                            </div>
+                            <textarea 
+                                class="input-field" 
+                                id="phi2Text"
+                                placeholder="Ask Phi-2 anything..."
+                            ></textarea>
+                            <button class="send-btn" onclick="sendToModel('phi-2')" id="phi2Btn">
+                                Send to Phi-2
+                            </button>
+                        </div>
+
+                        <div class="input-group" id="tinyllamaSafetensorsInput">
+                            <div class="input-label">
+                                TinyLlama (SafeTensors)
+                                <span class="model-badge badge-safetensors">SafeTensors</span>
+                                <span class="status-indicator status-offline" id="tinyllamaSafetensorsStatus"></span>
+                            </div>
+                            <textarea 
+                                class="input-field" 
+                                id="tinyllamaSafetensorsText"
+                                placeholder="Ask TinyLlama (SafeTensors) anything..."
+                            ></textarea>
+                            <button class="send-btn" onclick="sendToModel('tinyllama')" id="tinyllamaSafetensorsBtn">
+                                Send to TinyLlama
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'single';
+        let availableModels = [];
+        let modelStatuses = {};
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadModels();
+            updateModelStatuses();
+            
+            // Auto-resize textarea
+            const mainInput = document.getElementById('mainInput');
+            mainInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
+        });
+
+        // Load available models
+        async function loadModels() {
+            try {
+                const response = await fetch('/registry/models');
+                const data = await response.json();
+                availableModels = data.models || [];
+                
+                const dropdown = document.getElementById('modelDropdown');
+                dropdown.innerHTML = '';
+                
+                if (availableModels.length === 0) {
+                    dropdown.innerHTML = '<option value="">No models available</option>';
+                    return;
+                }
+
+                availableModels.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model.name;
+                    option.textContent = `${model.name} (${model.format}) - ${formatBytes(model.size)}`;
+                    dropdown.appendChild(option);
+                });
+
+                // Select first model by default
+                if (availableModels.length > 0) {
+                    dropdown.value = availableModels[0].name;
+                    onModelChange();
+                }
+            } catch (error) {
+                console.error('Error loading models:', error);
+                document.getElementById('modelDropdown').innerHTML = '<option value="">Error loading models</option>';
+            }
+        }
+
+        // Update model statuses
+        async function updateModelStatuses() {
+            try {
+                const response = await fetch('/runtime/status');
+                const data = await response.json();
+                
+                modelStatuses = {};
+                data.models.forEach(model => {
+                    modelStatuses[model.model] = {
+                        status: model.status,
+                        port: model.port,
+                        runtime: model.runtime
+                    };
+                });
+
+                // Update status indicators
+                updateStatusIndicators();
+            } catch (error) {
+                console.error('Error updating model statuses:', error);
+            }
+        }
+
+        // Update status indicators
+        function updateStatusIndicators() {
+            const statusMap = {
+                'tinyllama-gguf': 'tinyllamaStatus',
+                'phi-2': 'phi2Status',
+                'tinyllama': 'tinyllamaSafetensorsStatus'
+            };
+
+            Object.keys(statusMap).forEach(modelName => {
+                const indicatorId = statusMap[modelName];
+                const indicator = document.getElementById(indicatorId);
+                if (indicator) {
+                    const status = modelStatuses[modelName];
+                    if (status && status.status === 'running') {
+                        indicator.className = 'status-indicator status-online';
+                    } else {
+                        indicator.className = 'status-indicator status-offline';
+                    }
+                }
+            });
+        }
+
+        // Handle model selection change
+        function onModelChange() {
+            const dropdown = document.getElementById('modelDropdown');
+            const selectedModel = dropdown.value;
+            
+            if (selectedModel) {
+                const model = availableModels.find(m => m.name === selectedModel);
+                if (model) {
+                    document.getElementById('contextInfo').textContent = `ctx: 4,096 | ${model.format}`;
+                }
+            }
+        }
+
+        // Set input mode
+        function setMode(mode) {
+            currentMode = mode;
+            
+            // Update toggle buttons
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show/hide appropriate input areas
+            if (mode === 'single') {
+                document.getElementById('singleInputMode').style.display = 'block';
+                document.getElementById('multiInputMode').style.display = 'none';
+            } else {
+                document.getElementById('singleInputMode').style.display = 'none';
+                document.getElementById('multiInputMode').style.display = 'grid';
+            }
+        }
+
+        // Handle main input keydown
+        function handleMainInputKeydown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMainMessage();
+            }
+        }
+
+        // Send message via main input
+        async function sendMainMessage() {
+            const input = document.getElementById('mainInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            const sendBtn = document.getElementById('sendMainBtn');
+            const dropdown = document.getElementById('modelDropdown');
+            const selectedModel = dropdown.value;
+            
+            if (!selectedModel) {
+                alert('Please select a model first');
+                return;
+            }
+
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<div class="loading"></div>';
+            
+            try {
+                await sendToSelectedModel(selectedModel, message);
+                input.value = '';
+                input.style.height = 'auto';
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Error sending message: ' + error.message);
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = 'Send';
+            }
+        }
+
+        // Send message to specific model
+        async function sendToModel(modelName) {
+            const textareaId = getTextareaId(modelName);
+            const message = document.getElementById(textareaId).value.trim();
+            
+            if (!message) return;
+            
+            const btnId = getButtonId(modelName);
+            const btn = document.getElementById(btnId);
+            
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading"></div>';
+            
+            try {
+                await sendToSelectedModel(modelName, message);
+                document.getElementById(textareaId).value = '';
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Error sending message: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `Send to ${getModelDisplayName(modelName)}`;
+            }
+        }
+
+        // Send to selected model
+        async function sendToSelectedModel(modelName, message) {
+            // First ensure model is loaded
+            await ensureModelLoaded(modelName);
+            
+            // Then send the message
+            const response = await fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    model: modelName,
+                    prompt: message,
+                    max_tokens: 1000,
+                    temperature: 0.7
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log('Response from', modelName, ':', data);
+            
+            // Here you could display the response in a chat interface
+            // For now, we'll just show an alert
+            alert(`Response from ${modelName}:\n\n${data.response}`);
+        }
+
+        // Ensure model is loaded
+        async function ensureModelLoaded(modelName) {
+            const status = modelStatuses[modelName];
+            
+            if (!status || status.status !== 'running') {
+                // Load the model
+                const response = await fetch(`/runtime/load/${modelName}?threads=4`, {
+                    method: 'POST'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to load model ${modelName}`);
+                }
+                
+                // Wait a bit for model to load
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                // Update statuses
+                await updateModelStatuses();
+            }
+        }
+
+        // Helper functions
+        function getTextareaId(modelName) {
+            const map = {
+                'tinyllama-gguf': 'tinyllamaText',
+                'phi-2': 'phi2Text',
+                'tinyllama': 'tinyllamaSafetensorsText'
+            };
+            return map[modelName] || 'mainInput';
+        }
+
+        function getButtonId(modelName) {
+            const map = {
+                'tinyllama-gguf': 'tinyllamaBtn',
+                'phi-2': 'phi2Btn',
+                'tinyllama': 'tinyllamaSafetensorsBtn'
+            };
+            return map[modelName] || 'sendMainBtn';
+        }
+
+        function getModelDisplayName(modelName) {
+            const map = {
+                'tinyllama-gguf': 'TinyLlama (GGUF)',
+                'phi-2': 'Phi-2',
+                'tinyllama': 'TinyLlama (SafeTensors)'
+            };
+            return map[modelName] || modelName;
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Placeholder functions for navigation
+        function showNewChat() { console.log('New chat clicked'); }
+        function showSearch() { console.log('Search clicked'); }
+        function showImport() { console.log('Import clicked'); }
+        function showExport() { console.log('Export clicked'); }
+        function showSettings() { console.log('Settings clicked'); }
+
+        // Auto-refresh model statuses every 5 seconds
+        setInterval(updateModelStatuses, 5000);
+    </script>
+</body>
+</html>

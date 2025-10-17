@@ -1,0 +1,78 @@
+<section id="mcp-server" class="content-section">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Model Context Protocol (MCP) Server</h3>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="status-dot status-online"></div>
+                <span>Running</span>
+            </div>
+        </div>
+        <div class="card-content">
+            <div class="card-grid">
+                <div class="stat-card">
+                    <div class="stat-value primary">8</div>
+                    <div class="stat-label">Connected Clients</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value success">256</div>
+                    <div class="stat-label">Active Sessions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">1.2GB</div>
+                    <div class="stat-label">Context Memory</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value warning">45ms</div>
+                    <div class="stat-label">Avg Response</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Client ID</th>
+                    <th>Connection Time</th>
+                    <th>Last Activity</th>
+                    <th>Requests</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>VS Code Extension</td>
+                    <td>2 hours ago</td>
+                    <td>Just now</td>
+                    <td>156</td>
+                    <td><span class="status-dot status-online"></span> Active</td>
+                    <td>
+                        <button class="btn" style="padding: 4px 8px; font-size: 12px;">Details</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Web Interface</td>
+                    <td>30 minutes ago</td>
+                    <td>5 minutes ago</td>
+                    <td>23</td>
+                    <td><span class="status-dot status-online"></span> Active</td>
+                    <td>
+                        <button class="btn" style="padding: 4px 8px; font-size: 12px;">Details</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>API Client</td>
+                    <td>1 hour ago</td>
+                    <td>15 minutes ago</td>
+                    <td>89</td>
+                    <td><span class="status-dot status-warning"></span> Idle</td>
+                    <td>
+                        <button class="btn" style="padding: 4px 8px; font-size: 12px;">Details</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>

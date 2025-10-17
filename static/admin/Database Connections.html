@@ -1,0 +1,64 @@
+<section id="db-connections" class="content-section">
+    <div class="card-grid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Database Connections</h3>
+                <div class="card-actions">
+                    <button class="btn primary" onclick="addConnection()">
+                        <i class="fas fa-plus"></i> Add Connection
+                    </button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="connection-list">
+                    <div class="connection-item">
+                        <div class="connection-info">
+                            <strong>Primary Database</strong>
+                            <span>SQLite - memory/project.memory.json</span>
+                        </div>
+                        <div class="connection-status online">Connected</div>
+                    </div>
+                    <div class="connection-item">
+                        <div class="connection-info">
+                            <strong>Log Database</strong>
+                            <span>SQLite - core-server/logs/system.log</span>
+                        </div>
+                        <div class="connection-status online">Connected</div>
+                    </div>
+                    <div class="connection-item">
+                        <div class="connection-info">
+                            <strong>Backup Database</strong>
+                            <span>MySQL - localhost:3306</span>
+                        </div>
+                        <div class="connection-status offline">Disconnected</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Connection Statistics</h3>
+                <div class="card-icon">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+            </div>
+            <div class="card-content">
+                <div style="text-align: center;">
+                    <div class="stat-value primary">2/3</div>
+                    <div class="stat-label">Active Connections</div>
+                </div>
+                <div style="display: flex; justify-content: space-around; margin-top: 16px;">
+                    <div style="text-align: center;">
+                        <div class="stat-value success">156</div>
+                        <div class="stat-label">Queries Today</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div class="stat-value warning">45ms</div>
+                        <div class="stat-label">Avg Response</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

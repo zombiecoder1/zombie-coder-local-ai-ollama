@@ -1,0 +1,103 @@
+<section id="db-backup" class="content-section">
+    <div class="card-grid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Backup Configuration</h3>
+                <div class="card-icon">
+                    <i class="fas fa-cogs"></i>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="form-group">
+                    <label class="form-label">Backup Schedule:</label>
+                    <select class="form-control">
+                        <option>Daily</option>
+                        <option>Weekly</option>
+                        <option>Monthly</option>
+                        <option>Manual</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Backup Location:</label>
+                    <input type="text" class="form-control" value="C:\ZombieCoder-Agent-Personal\backups\" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Retention Period:</label>
+                    <select class="form-control">
+                        <option>7 days</option>
+                        <option>30 days</option>
+                        <option>90 days</option>
+                        <option>1 year</option>
+                    </select>
+                </div>
+                <button class="btn primary" style="width: 100%;" onclick="saveBackupConfig()">
+                    <i class="fas fa-save"></i> Save Configuration
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Quick Actions</h3>
+                <div class="card-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+            </div>
+            <div class="card-content">
+                <button class="btn success" style="width: 100%; margin-bottom: 8px;" onclick="createBackup()">
+                    <i class="fas fa-download"></i> Create Backup Now
+                </button>
+                <button class="btn warning" style="width: 100%; margin-bottom: 8px;" onclick="restoreBackup()">
+                    <i class="fas fa-upload"></i> Restore from Backup
+                </button>
+                <button class="btn" style="width: 100%;" onclick="verifyBackup()">
+                    <i class="fas fa-check-circle"></i> Verify Backup Integrity
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Backup History</h3>
+            <div class="card-actions">
+                <button class="btn" onclick="refreshBackupList()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+        </div>
+        <div class="card-content">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Backup File</th>
+                        <th>Date</th>
+                        <th>Size</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>backup_20240115.zip</td>
+                        <td>2024-01-15 10:00</td>
+                        <td>45MB</td>
+                        <td><span class="status-dot status-success"></span> Verified</td>
+                        <td>
+                            <button class="btn" style="padding: 4px 8px; font-size: 12px;">Restore</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>backup_20240114.zip</td>
+                        <td>2024-01-14 10:00</td>
+                        <td>42MB</td>
+                        <td><span class="status-dot status-success"></span> Verified</td>
+                        <td>
+                            <button class="btn" style="padding: 4px 8px; font-size: 12px;">Restore</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

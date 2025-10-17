@@ -1,0 +1,57 @@
+<section id="code-editor" class="content-section">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Editor Integration</h3>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="status-dot status-online"></div>
+                <span>Connected</span>
+            </div>
+        </div>
+        <div class="card-content">
+            <div class="card-grid">
+                <div class="stat-card">
+                    <div class="stat-value primary">VS Code</div>
+                    <div class="stat-label">Primary Editor</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value success">15</div>
+                    <div class="stat-label">Active Sessions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value warning">89</div>
+                    <div class="stat-label">Today's Requests</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">2.1s</div>
+                    <div class="stat-label">Avg Response</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <h3>Extension Configuration</h3>
+        <div class="form-group">
+            <label class="form-label">Editor Type:</label>
+            <select class="form-control">
+                <option>Visual Studio Code</option>
+                <option>Cursor</option>
+                <option>IntelliJ IDEA</option>
+                <option>Sublime Text</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Server URL:</label>
+            <input type="text" class="form-control" value="http://localhost:12346" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">API Key:</label>
+            <input type="password" class="form-control" value="************" />
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn primary">Save Configuration</button>
+            <button class="btn">Test Connection</button>
+            <button class="btn">Install Extension</button>
+        </div>
+    </div>
+</section>

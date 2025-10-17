@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import os
 import socket
+import json
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 import subprocess
 import time
 import socket
@@ -20,10 +21,58 @@ class RuntimeState:
         self.model_to_status: Dict[str, str] = {}  # stopped|loading|ready|error
         self.model_to_pid: Dict[str, int] = {}
         self.model_to_last_access: Dict[str, float] = {}
+        self.model_to_runtime: Dict[str, str] = {}  # gguf|safetensors
         self._idle_thread_started: bool = False
 
 
 STATE = RuntimeState()
+
+
+def load_runtime_config(root: Path) -> Dict:
+    """Load runtime configuration"""
+    config_file = root / "config" / "runtime_config.json"
+    if config_file.exists():
+        with open(config_file, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    
+    # Default config if file doesn't exist
+    return {
+        "runtime_rules": {
+            "gguf": {
+                "engine": "llama.cpp",
+                "command": "config/llama.cpp/server.exe"
+            },
+            "safetensors": {
+                "engine": "transformers",
+                "command": "python"
+            }
+        }
+    }
+
+
+def detect_model_format(model_path: Path) -> Tuple[str, Optional[Path]]:
+    """
+    Detect model format and return (format_type, model_file)
+    
+    Returns:
+        ("gguf", gguf_file_path) or ("safetensors", safetensors_dir)
+    """
+    # Check for GGUF files
+    gguf_files = list(model_path.glob("*.gguf"))
+    if gguf_files:
+        return ("gguf", gguf_files[0])
+    
+    # Check for SafeTensors files
+    safetensors_files = list(model_path.glob("*.safetensors"))
+    if safetensors_files:
+        return ("safetensors", model_path)
+    
+    # Check for PyTorch bins
+    bin_files = list(model_path.glob("*.bin"))
+    if bin_files:
+        return ("safetensors", model_path)  # treat as safetensors-compatible
+    
+    return ("unknown", None)
 
 
 def find_free_port(start: int = 8080, end: int = 8100) -> Optional[int]:
@@ -79,6 +128,7 @@ def get_status() -> Dict:
                 "status": STATE.model_to_status.get(m, "stopped"),
                 "port": STATE.model_to_port.get(m),
                 "pid": STATE.model_to_pid.get(m),
+                "runtime": STATE.model_to_runtime.get(m, "unknown"),
                 "last_access_ts": STATE.model_to_last_access.get(m),
             }
             for m in sorted(set(list(STATE.model_to_status.keys()) + list(STATE.model_to_port.keys())))
@@ -87,39 +137,85 @@ def get_status() -> Dict:
 
 
 def load_model(root: Path, model_name: str, model_path: Path, threads: int = 4) -> Dict:
-    runtime = check_runtime_available(root)
-    if not runtime["exists"]:
+    """Load model with automatic runtime selection based on format"""
+    
+    # Detect model format
+    format_type, detected_path = detect_model_format(model_path)
+    
+    if format_type == "unknown":
         return {
             "status": "error",
-            "reason": "runtime_missing",
-            "runtime": runtime,
-            "suggestion": "Download/build llama.cpp server and place it under config/llama.cpp/",
+            "reason": "unsupported_format",
+            "message": f"No supported model files found in {model_path}",
+            "suggestion": "Model must contain .gguf or .safetensors files"
         }
-
+    
+    # Load runtime config
+    config = load_runtime_config(root)
+    runtime_config = config["runtime_rules"].get(format_type)
+    
+    if not runtime_config:
+        return {
+            "status": "error",
+            "reason": "no_runtime_config",
+            "format": format_type,
+            "message": f"No runtime configured for {format_type} format"
+        }
+    
     port = find_free_port()
     if port is None:
         return {"status": "error", "reason": "no_free_port", "message": "No free port in 8080-8100"}
 
-    # Heuristic GPU layers from VRAM
-    sysinfo = detect_system_info()
-    vram_mb = sysinfo.get("vram_mb") or 0
+    # Initialize variables
     gpu_layers = 0
-    if vram_mb >= 6144:
-        gpu_layers = 40
-    elif vram_mb >= 4096:
-        gpu_layers = 28
-    elif vram_mb >= 2048:
-        gpu_layers = 16
-
-    # Start llama.cpp server as subprocess (real launcher)
-    server_bin = llama_server_path(root)
-    # Prepare variants to handle different llama.cpp server flavors
-    base_a = [str(server_bin), "-m", str(model_path), "-p", str(port), "-t", str(threads)]
-    base_b = [str(server_bin), "--model", str(model_path), "--port", str(port), "--threads", str(threads)]
-    if gpu_layers > 0:
-        base_a += ["-ngl", str(gpu_layers)]
-        base_b += ["--gpu-layers", str(gpu_layers)]
-    cmd_variants = [base_b, base_a]
+    
+    # Build command based on format
+    if format_type == "gguf":
+        # GGUF - use llama.cpp
+        server_bin = llama_server_path(root)
+        if not server_bin.exists():
+            return {
+                "status": "error",
+                "reason": "runtime_missing",
+                "format": format_type,
+                "message": f"llama.cpp server not found at {server_bin}"
+            }
+        
+        # GPU layers heuristic
+        sysinfo = detect_system_info()
+        vram_mb = sysinfo.get("vram_mb") or 0
+        gpu_layers = 0
+        if vram_mb >= 6144:
+            gpu_layers = 40
+        elif vram_mb >= 4096:
+            gpu_layers = 28
+        elif vram_mb >= 2048:
+            gpu_layers = 16
+        
+        # llama.cpp command variants
+        base_a = [str(server_bin), "-m", str(detected_path), "-p", str(port), "-t", str(threads)]
+        base_b = [str(server_bin), "--model", str(detected_path), "--port", str(port), "--threads", str(threads)]
+        if gpu_layers > 0:
+            base_a += ["-ngl", str(gpu_layers)]
+            base_b += ["--gpu-layers", str(gpu_layers)]
+        cmd_variants = [base_b, base_a]
+    
+    elif format_type == "safetensors":
+        # SafeTensors - use transformers runner
+        cmd_variants = [[
+            "python",
+            str(root / "scripts" / "transformers_runner.py"),
+            "--model", str(detected_path),
+            "--port", str(port),
+            "--device", "auto"
+        ]]
+    
+    else:
+        return {
+            "status": "error",
+            "reason": "unsupported_format",
+            "format": format_type
+        }
     # Log stdout/stderr to file for diagnostics
     logs_dir = root / "logs"
     logs_dir.mkdir(parents=True, exist_ok=True)
@@ -155,6 +251,7 @@ def load_model(root: Path, model_name: str, model_path: Path, threads: int = 4) 
     STATE.model_to_pid[model_name] = proc.pid
     STATE.model_to_status[model_name] = "loading"
     STATE.model_to_last_access[model_name] = time.time()
+    STATE.model_to_runtime[model_name] = format_type  # Track runtime type
 
     # Wait briefly for port to open
     t0 = time.time()
@@ -175,15 +272,24 @@ def load_model(root: Path, model_name: str, model_path: Path, threads: int = 4) 
         time.sleep(0.5)
 
     STATE.model_to_status[model_name] = "ready" if ready else "loading"
-    return {
+    
+    # Build response
+    response = {
         "status": STATE.model_to_status[model_name],
         "model": model_name,
         "port": port,
         "pid": proc.pid,
         "command": " ".join(used_cmd) if used_cmd else None,
         "log": str(runtime_log),
-        "gpu_layers": gpu_layers,
+        "format": format_type,
+        "runtime": runtime_config.get("engine", "unknown")
     }
+    
+    # Add GPU layers info for GGUF only
+    if format_type == "gguf":
+        response["gpu_layers"] = gpu_layers
+    
+    return response
 
 
 def unload_model(model_name: str) -> Dict:

@@ -1,0 +1,74 @@
+<section id="model-management" class="content-section">
+    <div class="card-grid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Local Models</h3>
+                <div class="card-actions">
+                    <button class="btn primary" onclick="pullNewModel()">
+                        <i class="fas fa-download"></i> Pull Model
+                    </button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="model-list">
+                    <div class="model-item">
+                        <div class="model-info">
+                            <strong>gemma:2b</strong>
+                            <span>2.0B parameters</span>
+                        </div>
+                        <div class="model-status online">Loaded</div>
+                    </div>
+                    <div class="model-item">
+                        <div class="model-info">
+                            <strong>deepseek-coder:1.3b</strong>
+                            <span>1.3B parameters</span>
+                        </div>
+                        <div class="model-status online">Loaded</div>
+                    </div>
+                    <div class="model-item">
+                        <div class="model-info">
+                            <strong>qwen2.5-coder:1.5b</strong>
+                            <span>1.5B parameters</span>
+                        </div>
+                        <div class="model-status offline">Not Loaded</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Model Statistics</h3>
+                <div class="card-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+            </div>
+            <div class="card-content">
+                <div style="margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Total Models:</span>
+                        <span>3</span>
+                    </div>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Loaded Models:</span>
+                        <span>2</span>
+                    </div>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Total Size:</span>
+                        <span>4.8GB</span>
+                    </div>
+                </div>
+                <div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Available Space:</span>
+                        <span>15.2GB</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

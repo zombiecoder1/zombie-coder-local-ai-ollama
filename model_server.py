@@ -35,6 +35,11 @@ from runtime_db import upsert_model_state, delete_model_state, get_all_states
 import requests as httpx
 import threading
 import os
+import sys
+sys.path.insert(0, str(Path(__file__).parent / "scripts"))
+from registry_manager import ModelRegistry
+from auth_manager import AUTH_MANAGER
+from hf_models_api import HuggingFaceModelsAPI
 
 
 ROOT_DIR = Path(__file__).parent
@@ -43,6 +48,16 @@ REGISTRY_FILE = MODELS_DIR / "models_registry.json"
 PORT = int(os.getenv("MODEL_SERVER_PORT", 8155))  # uncommon default port
 START_TIME = time.time()
 DB_PATH = ROOT_DIR / "data" / "runtime.db"
+
+# Initialize Model Registry
+MODEL_REGISTRY = ModelRegistry(str(REGISTRY_FILE))
+
+# Initialize Auth Manager and load token
+AUTH_MANAGER.load_token()
+AUTH_MANAGER.set_env_token()
+
+# Initialize HuggingFace Models API
+HF_API = HuggingFaceModelsAPI(token=AUTH_MANAGER.get_token())
 
 # Provider meta (from user)
 PROVIDER_INFO = {
@@ -158,6 +173,14 @@ async def root():
     if index_file.exists():
         return FileResponse(str(index_file))
     return HTMLResponse("<h1>ZombieCoder Local AI Framework</h1><p>UI not found.</p>")
+
+@app.get("/ui", response_class=HTMLResponse)
+async def custom_ui():
+    """Serve the custom ZombieCoder UI."""
+    ui_file = static_dir / "llama_ui" / "index.html"
+    if ui_file.exists():
+        return FileResponse(str(ui_file))
+    return HTMLResponse("<h1>ZombieCoder Custom UI</h1><p>Custom UI not found.</p>")
 
 
 @app.get("/health")
@@ -333,17 +356,100 @@ class DownloadRequest(BaseModel):
 
 @app.post("/download/start")
 async def download_start(req: DownloadRequest):
-    return DL.start(req.model_name, req.repo_id, MODELS_DIR, revision=req.revision)
+    # Check if repo contains GGUF files (optional validation)
+    # For now, we trust the user to provide GGUF repos
+    
+    # Start download
+    result = DL.start(req.model_name, req.repo_id, MODELS_DIR, revision=req.revision)
+    
+    # If download started successfully, add to registry as "downloading"
+    if result.get("status") in ["started", "busy"]:
+        try:
+            MODEL_REGISTRY.add_available_model(
+                model_name=req.model_name,
+                repo_id=req.repo_id,
+                filename="downloading...",
+                size_estimate_mb=0,
+                description=f"Downloading from {req.repo_id}",
+                format="gguf"
+            )
+        except:
+            pass
+    
+    return result
 
 
 @app.get("/download/status/{model}")
 async def download_status(model: str):
-    return DL.status(model)
+    status = DL.status(model)
+    
+    # If download completed, validate format and update registry
+    if status.get("status") == "completed" and not status.get("registry_updated"):
+        model_dir = MODELS_DIR / model
+        if model_dir.exists():
+            validation = MODEL_REGISTRY.validate_model_format(model_dir)
+            status["format_validation"] = validation
+            
+            # If GGUF format, add to installed models
+            if validation["valid"]:
+                try:
+                    # Get model size
+                    total_size = sum(f.stat().st_size for f in model_dir.rglob("*") if f.is_file())
+                    size_mb = total_size / (1024 * 1024)
+                    
+                    # Get GGUF filename
+                    gguf_files = validation.get("files", [])
+                    filename = gguf_files[0] if gguf_files else "model.gguf"
+                    
+                    # Get repo_id from job
+                    job = DL.status(model).get("job", {})
+                    repo_id = job.get("repo_id", "unknown")
+                    
+                    MODEL_REGISTRY.add_installed_model(
+                        model_name=model,
+                        repo_id=repo_id,
+                        filename=filename,
+                        location=str(model_dir / filename),
+                        size_mb=round(size_mb, 2),
+                        format="gguf"
+                    )
+                    status["registry_updated"] = True
+                except Exception as e:
+                    status["registry_error"] = str(e)
+    
+    return status
 
 
 @app.post("/download/cancel/{model}")
 async def download_cancel(model: str):
     return DL.cancel(model)
+
+
+@app.get("/registry/models")
+async def registry_models():
+    """Get all models from registry (installed and available)"""
+    try:
+        installed = MODEL_REGISTRY.list_installed_models()
+        available = MODEL_REGISTRY.list_available_models()
+        return {
+            "installed": installed,
+            "available": available,
+            "count_installed": len(installed),
+            "count_available": len(available)
+        }
+    except Exception as e:
+        return {"error": str(e), "installed": {}, "available": {}}
+
+
+@app.get("/registry/validate/{model}")
+async def registry_validate_model(model: str):
+    """Validate model format"""
+    model_dir = MODELS_DIR / model
+    if not model_dir.exists():
+        raise HTTPException(status_code=404, detail=f"Model directory not found: {model}")
+    
+    validation = MODEL_REGISTRY.validate_model_format(model_dir)
+    return validation
 
 
 # ------------------------
@@ -359,13 +465,107 @@ async def set_hf_token(t: HFToken):
     # Store in environment so downloader subprocess and hub API can use it
     os.environ["HUGGINGFACE_HUB_TOKEN"] = t.token.strip()
     os.environ["HF_TOKEN"] = t.token.strip()
+    
+    # Save to file via auth manager
+    AUTH_MANAGER.save_token(t.token.strip())
+    
+    # Reinitialize HuggingFace API with new token
+    global HF_API
+    HF_API = HuggingFaceModelsAPI(token=t.token.strip())
+    
     return {"ok": True, "token_set": True}
 
 
 @app.get("/auth/status")
 async def auth_status():
     token_present = bool(os.getenv("HUGGINGFACE_HUB_TOKEN") or os.getenv("HF_TOKEN"))
-    return {"token_set": token_present}
+    
+    # Get user info if token is present
+    user_info = None
+    if token_present:
+        user_info = AUTH_MANAGER.get_user_info()
+    
+    return {
+        "token_set": token_present,
+        "user_info": user_info
+    }
+
+
+@app.get("/auth/whoami")
+async def auth_whoami():
+    """Get current logged in user info"""
+    return AUTH_MANAGER.get_user_info()
+
+
+# ------------------------
+# HuggingFace Discovery endpoints
+# ------------------------
+
+@app.get("/hf/models")
+async def hf_search_models(search: str = "GGUF", limit: int = 25, author: str = None):
+    """
+    Search for models on HuggingFace Hub
+    
+    Query params:
+        search: Search query (default: "GGUF")
+        limit: Max results (default: 25)
+        author: Filter by author (e.g., "TheBloke")
+    """
+    try:
+        models = HF_API.search_gguf_models(
+            search=search,
+            limit=limit,
+            author=author
+        )
+        return {
+            "search": search,
+            "count": len(models) if isinstance(models, list) else 0,
+            "models": models
+        }
+    except Exception as e:
+        return {"error": str(e), "models": []}
+
+
+@app.get("/hf/popular")
+async def hf_popular_models(limit: int = 10):
+    """Get popular GGUF models"""
+    try:
+        models = HF_API.get_popular_gguf_models(limit=limit)
+        return {
+            "count": len(models),
+            "models": models
+        }
+    except Exception as e:
+        return {"error": str(e), "models": []}
+
+
+@app.get("/hf/files/{repo_id:path}")
+async def hf_model_files(repo_id: str):
+    """
+    Get files from a HuggingFace model repository
+    
+    Path param:
+        repo_id: HuggingFace repo ID (e.g., TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF)
+    """
+    try:
+        files = HF_API.get_model_files(repo_id)
+        return files
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/hf/small-models")
+async def hf_small_models():
+    """Get small GGUF models suitable for low-end hardware"""
+    try:
+        models = HF_API.search_by_size(max_size_gb=3.0)
+        return {
+            "count": len(models),
+            "models": models,
+            "description": "Models under 3GB suitable for low-end hardware"
+        }
+    except Exception as e:
+        return {"error": str(e), "models": []}
 
 
 # Runtime control (lazy-loader stubs)
@@ -381,19 +581,27 @@ async def runtime_get_status():
 
 @app.post("/runtime/load/{model}")
 async def runtime_load_model(model: str, threads: int = 4):
-    # Resolve model path (restrict to GGUF to avoid incompatible formats)
+    """Load model with automatic format detection and runtime selection"""
     model_dir = MODELS_DIR / model
-    model_path = None
-    candidates = list(model_dir.glob("*.gguf"))
-    if candidates:
-        model_path = candidates[0]
-    if not model_path:
-        raise HTTPException(status_code=404, detail=f"GGUF weights not found under {model_dir}")
-    res = runtime_load(ROOT_DIR, model, model_path, threads=threads)
+    
+    if not model_dir.exists():
+        raise HTTPException(status_code=404, detail=f"Model directory not found: {model_dir}")
+    
+    # Load model (runtime will auto-detect format)
+    res = runtime_load(ROOT_DIR, model, model_dir, threads=threads)
+    
+    # Update database
     try:
-        upsert_model_state(DB_PATH, model, res.get("status","unknown"), res.get("port"), res.get("pid"))
+        upsert_model_state(
+            DB_PATH, 
+            model, 
+            res.get("status", "unknown"), 
+            res.get("port"), 
+            res.get("pid")
+        )
     except Exception:
         pass
+    
     return res
 
 
@@ -476,6 +684,7 @@ class GenerateRequest(BaseModel):
     stream: bool = False
     options: Optional[Dict] = None
     session_id: Optional[str] = None
+    system: Optional[str] = None
 
 
 class ChatMessage(BaseModel):
@@ -508,8 +717,20 @@ async def api_generate(req: GenerateRequest):
     # Proxy to llama.cpp server completion endpoint
     try:
         url = f"http://127.0.0.1:{port}/completion"
+        # Build prompt with system context if provided
+        system_prompt = req.system or """You are ZombieCoder Local AI Assistant.
+
+IMPORTANT FACTS (never contradict these):
+- Provider: ZombieCoder Local AI Framework
+- Location: Running LOCALLY on user's own computer at C:\\model (NOT in cloud, NOT in New York, NOT anywhere else)
+- Cost: Completely FREE - 100% offline, zero API costs
+- You run on the user's own hardware, not on any remote server
+
+You help users with coding, questions, and tasks. Always be honest about being a local AI model."""
+        
+        full_prompt = f"{system_prompt}\n\nUser: {req.prompt}\nAssistant:"
         # Force non-streaming single JSON response and limit tokens for low latency
-        payload = {"prompt": req.prompt, "stream": False, "n_predict": 64}
+        payload = {"prompt": full_prompt, "stream": False, "n_predict": 64}
         # Try up to ~60s to allow runtime to finish loading the model
         deadline = time.time() + 60
         last_resp = None

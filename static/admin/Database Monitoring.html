@@ -1,0 +1,49 @@
+<section id="db-monitoring" class="content-section">
+    <div class="card-grid">
+        <div class="stat-card">
+            <div class="stat-value success">99.9%</div>
+            <div class="stat-label">Uptime</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value primary">156</div>
+            <div class="stat-label">Queries/Min</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value warning">45ms</div>
+            <div class="stat-label">Avg Response</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">0</div>
+            <div class="stat-label">Active Locks</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Performance Metrics</h3>
+            <div class="card-actions">
+                <select class="form-control">
+                    <option>Last hour</option>
+                    <option>Last 24 hours</option>
+                    <option>Last 7 days</option>
+                </select>
+            </div>
+        </div>
+        <div class="card-content">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div>
+                    <h4>Query Performance</h4>
+                    <div style="height: 200px; background: var(--bg-tertiary); border-radius: 6px; padding: 16px;">
+                        <!-- Query performance chart -->
+                    </div>
+                </div>
+                <div>
+                    <h4>Connection Statistics</h4>
+                    <div style="height: 200px; background: var(--bg-tertiary); border-radius: 6px; padding: 16px;">
+                        <!-- Connection statistics chart -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

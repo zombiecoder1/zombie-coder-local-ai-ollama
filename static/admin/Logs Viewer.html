@@ -1,0 +1,101 @@
+<section id="logs-viewer" class="content-section">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">System Logs</h3>
+            <div class="card-actions">
+                <select class="form-control" id="logLevel" onchange="filterLogs()">
+                    <option value="all">All Levels</option>
+                    <option value="info">Info</option>
+                    <option value="warning">Warning</option>
+                    <option value="error">Error</option>
+                </select>
+                <button class="btn" onclick="refreshLogs()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+                <button class="btn primary" onclick="clearLogs()">
+                    <i class="fas fa-trash"></i> Clear
+                </button>
+            </div>
+        </div>
+        <div class="card-content">
+            <div id="log-container" style="height: 400px; overflow-y: auto; background: var(--bg-primary); border: 1px solid var(--border-default); border-radius: 6px; padding: 16px; font-family: 'Courier New', monospace; font-size: 12px;">
+                <div class="log-entry info">
+                    <span class="log-time">[2024-01-15 10:30:45]</span>
+                    <span class="log-level">INFO</span>
+                    <span class="log-message">System started successfully</span>
+                </div>
+                <div class="log-entry info">
+                    <span class="log-time">[2024-01-15 10:30:46]</span>
+                    <span class="log-level">INFO</span>
+                    <span class="log-message">Ollama server connected on port 11434</span>
+                </div>
+                <div class="log-entry warning">
+                    <span class="log-time">[2024-01-15 10:31:20]</span>
+                    <span class="log-level">WARNING</span>
+                    <span class="log-message">High memory usage detected in Ollama process</span>
+                </div>
+                <div class="log-entry error">
+                    <span class="log-time">[2024-01-15 10:32:15]</span>
+                    <span class="log-level">ERROR</span>
+                    <span class="log-message">External API timeout - HuggingFace</span>
+                </div>
+                <div class="log-entry info">
+                    <span class="log-time">[2024-01-15 10:32:16]</span>
+                    <span class="log-level">INFO</span>
+                    <span class="log-message">Fallback to local Ollama successful</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-grid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Log Statistics</h3>
+                <div class="card-icon">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+            </div>
+            <div class="card-content">
+                <div style="text-align: center;">
+                    <div class="stat-value primary">156</div>
+                    <div class="stat-label">Total Log Entries</div>
+                </div>
+                <div style="display: flex; justify-content: space-around; margin-top: 16px;">
+                    <div style="text-align: center;">
+                        <div class="stat-value success">128</div>
+                        <div class="stat-label">Info</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div class="stat-value warning">18</div>
+                        <div class="stat-label">Warning</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div class="stat-value danger">10</div>
+                        <div class="stat-label">Error</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Quick Actions</h3>
+                <div class="card-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+            </div>
+            <div class="card-content">
+                <button class="btn" style="width: 100%; margin-bottom: 8px;" onclick="downloadLogs()">
+                    <i class="fas fa-download"></i> Download Logs
+                </button>
+                <button class="btn" style="width: 100%; margin-bottom: 8px;" onclick="searchLogs()">
+                    <i class="fas fa-search"></i> Search in Logs
+                </button>
+                <button class="btn" style="width: 100%;" onclick="exportLogAnalysis()">
+                    <i class="fas fa-file-export"></i> Export Analysis
+                </button>
+            </div>
+        </div>
+    </div>
+</section>

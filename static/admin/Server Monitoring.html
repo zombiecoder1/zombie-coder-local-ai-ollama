@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Server Monitoring - Zombie Coder</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="public/style.css">
+</head>
+<body>
+    <main class="page-main">
+        <h1 class="page-title">Server Monitoring</h1>
+
+        <section id="server-monitoring">
+            <div class="card-grid">
+                <div class="stat-card">
+                    <div class="stat-value success">98%</div>
+                    <div class="stat-label">System Uptime</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value warning">45%</div>
+                    <div class="stat-label">CPU Usage</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value primary">3.2GB</div>
+                    <div class="stat-label">Memory Used</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value success">125MB/s</div>
+                    <div class="stat-label">Network I/O</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Real-time Server Metrics</h3>
+                    <div class="card-actions">
+                        <button class="btn" id="start-live"><i class="fas fa-play"></i> Start Live</button>
+                        <button class="btn" id="export-metrics"><i class="fas fa-download"></i> Export</button>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div id="metrics-chart" class="metrics-chart">
+                        <div class="metrics-placeholder">
+                            <i class="fas fa-chart-line metrics-icon"></i>
+                            <p>Live metrics chart will appear here when monitoring starts</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-container mt-16">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Status</th>
+                            <th>Response Time</th>
+                            <th>Requests/Min</th>
+                            <th>Errors</th>
+                            <th>Last Check</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Main Server (12346)</td>
+                            <td><span class="status-dot status-online"></span> Online</td>
+                            <td>45ms</td>
+                            <td>125</td>
+                            <td>0</td>
+                            <td>Just now</td>
+                        </tr>
+                        <tr>
+                            <td>Ollama (11434)</td>
+                            <td><span class="status-dot status-online"></span> Online</td>
+                            <td>120ms</td>
+                            <td>89</td>
+                            <td>2</td>
+                            <td>30s ago</td>
+                        </tr>
+                        <tr>
+                            <td>Database</td>
+                            <td><span class="status-dot status-online"></span> Online</td>
+                            <td>15ms</td>
+                            <td>230</td>
+                            <td>0</td>
+                            <td>Just now</td>
+                        </tr>
+                        <tr>
+                            <td>External APIs</td>
+                            <td><span class="status-dot status-warning"></span> Slow</td>
+                            <td>450ms</td>
+                            <td>56</td>
+                            <td>5</td>
+                            <td>1m ago</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="public/script.js"></script>
+    <script>
+        // small helper bindings for standalone page
+        document.getElementById('start-live').addEventListener('click', function(){
+            showNotification('Live monitoring started', 'info');
+            // placeholder: start fetching metrics
+        });
+        document.getElementById('export-metrics').addEventListener('click', function(){
+            showNotification('Exporting metrics...', 'info');
+            setTimeout(()=>showNotification('Metrics exported', 'success'),800);
+        });
+    </script>
+</body>
+</html>

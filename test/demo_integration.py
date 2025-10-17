@@ -122,7 +122,7 @@ def demo_memory_service():
     print_info(f"Saving conversation to session: {session_id}")
     
     conversation = [
-        {"message": "Hello", "response": "Hi! How can I help you?"},
+        {"message": "Hello", "response": "Hi! Hello Zombie?"},
         {"message": "What is Python?", "response": "Python is a programming language."},
         {"message": "Tell me more", "response": "Python is easy to learn and powerful."}
     ]
