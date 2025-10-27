@@ -114,8 +114,10 @@ def load_model(root: Path, model_name: str, model_path: Path, threads: int = 4) 
     # Start llama.cpp server as subprocess (real launcher)
     server_bin = llama_server_path(root)
     # Prepare variants to handle different llama.cpp server flavors
-    base_a = [str(server_bin), "-m", str(model_path), "-p", str(port), "-t", str(threads)]
-    base_b = [str(server_bin), "--model", str(model_path), "--port", str(port), "--threads", str(threads)]
+    # Add context size for better quality responses on small models
+    ctx = os.environ.get("LLAMA_CTX", "2048")
+    base_a = [str(server_bin), "-m", str(model_path), "-p", str(port), "-t", str(threads), "-c", str(ctx)]
+    base_b = [str(server_bin), "--model", str(model_path), "--port", str(port), "--threads", str(threads), "--ctx-size", str(ctx)]
     if gpu_layers > 0:
         base_a += ["-ngl", str(gpu_layers)]
         base_b += ["--gpu-layers", str(gpu_layers)]

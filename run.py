@@ -230,10 +230,14 @@ def run_chat_test(base_url: str, model: str) -> Dict:
         "max_tokens": 48,
     }
     try:
-        r = requests.post(f"{base_url}/api/chat", headers=headers, json=payload, timeout=40)
+        t0 = time.time()
+        r = requests.post(f"{base_url}/api/chat", headers=headers, json=payload, timeout=60)
+        latency_ms = int((time.time() - t0) * 1000)
         ok = r.status_code == 200 and r.headers.get("content-type", "").startswith("application/json")
         data = r.json() if ok else {"status": r.status_code, "text": r.text[:200]}
-        return {"ok": ok, "response": data}
+        if ok and isinstance(data, dict) and "latency_ms" in data:
+            latency_ms = data.get("latency_ms")
+        return {"ok": ok, "response": data, "latency_ms": latency_ms}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
@@ -250,10 +254,14 @@ def run_generate_test(base_url: str, model: str) -> Dict:
         "stream": False,
     }
     try:
-        r = requests.post(f"{base_url}/api/generate", headers=headers, json=payload, timeout=60)
+        t0 = time.time()
+        r = requests.post(f"{base_url}/api/generate", headers=headers, json=payload, timeout=90)
+        latency_ms = int((time.time() - t0) * 1000)
         ok = r.status_code == 200 and r.headers.get("content-type", "").startswith("application/json")
         data = r.json() if ok else {"status": r.status_code, "text": r.text[:200]}
-        return {"ok": ok, "response": data}
+        if ok and isinstance(data, dict) and "latency_ms" in data:
+            latency_ms = data.get("latency_ms")
+        return {"ok": ok, "response": data, "latency_ms": latency_ms}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
@@ -335,7 +343,7 @@ def main() -> int:
     # Tests
     log("4) Running Chat test (with headers) ...")
     chat_res = run_chat_test(base, model)
-    log(f"   Chat: {'OK' if chat_res.get('ok') else 'FAIL'}")
+    log(f"   Chat: {'OK' if chat_res.get('ok') else 'FAIL'} | latency: {chat_res.get('latency_ms', 'n/a')} ms")
     if chat_res.get("ok"):
         try:
             content = chat_res["response"]["runtime_response"]["content"]
@@ -345,7 +353,7 @@ def main() -> int:
 
     log("5) Running JSON API generate test ...")
     gen_res = run_generate_test(base, model)
-    log(f"   Generate: {'OK' if gen_res.get('ok') else 'FAIL'}")
+    log(f"   Generate: {'OK' if gen_res.get('ok') else 'FAIL'} | latency: {gen_res.get('latency_ms', 'n/a')} ms")
     if gen_res.get("ok"):
         try:
             content = gen_res["response"]["runtime_response"].get("content", "")

@@ -46,6 +46,14 @@ PORT = int(os.getenv("MODEL_SERVER_PORT", 8155))  # uncommon default port
 START_TIME = time.time()
 DB_PATH = ROOT_DIR / "data" / "runtime.db"
 
+# Default generation parameters for llama.cpp runtime
+GEN_DEFAULTS: Dict[str, float | int] = {
+    "temperature": 0.7,
+    "top_p": 0.9,
+    "top_k": 40,
+    "repeat_penalty": 1.1,
+}
+
 # Provider meta (from user)
 PROVIDER_INFO = {
     "product": "ZombieCoder Local AI",
@@ -169,6 +177,13 @@ async def root():
     if index_file.exists():
         return FileResponse(str(index_file))
     return HTMLResponse("<h1>ZombieCoder Local AI Framework</h1><p>UI not found.</p>")
+@app.get("/ui", response_class=HTMLResponse)
+async def ui():
+    dashboard = ROOT_DIR / "test" / "api.html"
+    if dashboard.exists():
+        return FileResponse(str(dashboard))
+    return HTMLResponse("<h2>API Dashboard not found</h2><p>Create test/api.html</p>", status_code=404)
+
 
 
 @app.get("/health")
@@ -529,8 +544,23 @@ Cost: Free - 100% offline, no API costs
 You are here to help users with coding, questions, and tasks."""
         
         full_prompt = f"{system_prompt}\n\nUser: {req.prompt}\nAssistant:"
-        # Force non-streaming single JSON response and limit tokens for low latency
-        payload = {"prompt": full_prompt, "stream": False, "n_predict": 64}
+        # Prepare generation params (merge defaults with options)
+        opts = dict(GEN_DEFAULTS)
+        if isinstance(req.options, dict):
+            for k, v in req.options.items():
+                opts[k] = v
+        n_predict = int(opts.pop("n_predict", 64))
+        # llama.cpp param names differ: map common ones
+        payload = {"prompt": full_prompt, "stream": False, "n_predict": n_predict}
+        if "temperature" in opts:
+            payload["temperature"] = float(opts["temperature"])
+        if "top_p" in opts:
+            payload["top_p"] = float(opts["top_p"])
+        if "top_k" in opts:
+            payload["top_k"] = int(opts["top_k"])
+        if "repeat_penalty" in opts:
+            payload["repeat_penalty"] = float(opts["repeat_penalty"])
+        t0 = time.time()
         # Try up to ~60s to allow runtime to finish loading the model
         deadline = time.time() + 60
         last_resp = None
@@ -546,6 +576,7 @@ You are here to help users with coding, questions, and tasks."""
                     continue
             # Any other non-200 or timeout → error
             raise HTTPException(status_code=502, detail=f"Runtime error {r.status_code}: {r.text[:200]}")
+        latency_ms = int((time.time() - t0) * 1000)
         data = last_resp.json() if last_resp is not None else {}
         # mark last access for idle killer
         try:
@@ -556,7 +587,7 @@ You are here to help users with coding, questions, and tasks."""
         sid = req.session_id or (req.options or {}).get("session_id") if req.options else None
         if sid:
             _session_touch(sid, last_model=req.model)
-        return {"model": req.model, "runtime_port": port, "runtime_response": data}
+        return {"model": req.model, "runtime_port": port, "latency_ms": latency_ms, "runtime_response": data}
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Proxy error: {e}")
 
@@ -639,11 +670,21 @@ You are here to help users with coding, questions, and tasks."""
     # Proxy to llama.cpp server completion endpoint
     try:
         url = f"http://127.0.0.1:{port}/completion"
-        payload = {
-            "prompt": conversation,
-            "stream": False,
-            "n_predict": req.max_tokens or 100
-        }
+        opts = dict(GEN_DEFAULTS)
+        if isinstance(req.options, dict):
+            for k, v in req.options.items():
+                opts[k] = v
+        n_predict = int(opts.pop("n_predict", req.max_tokens or 100))
+        payload = {"prompt": conversation, "stream": False, "n_predict": n_predict}
+        if "temperature" in opts:
+            payload["temperature"] = float(opts["temperature"])
+        if "top_p" in opts:
+            payload["top_p"] = float(opts["top_p"])
+        if "top_k" in opts:
+            payload["top_k"] = int(opts["top_k"])
+        if "repeat_penalty" in opts:
+            payload["repeat_penalty"] = float(opts["repeat_penalty"])
+        t0 = time.time()
 
         # More tolerant waiting with 503 handling like generate()
         deadline = time.time() + 90
@@ -678,6 +719,7 @@ You are here to help users with coding, questions, and tasks."""
                                     "index": 0,
                                     "content": content,
                                 },
+                                "latency_ms": int((time.time() - t0) * 1000),
                             }
 
                 # llama.cpp may return 503 while still loading

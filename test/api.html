@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ZombieCoder API Dashboard</title>
+  <style>
+    :root { --bg:#0b1220; --fg:#e6edf3; --muted:#9fb0c3; --accent:#6ab0ff; --ok:#2ecc71; --err:#ff6b6b; }
+    body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; background:var(--bg); color:var(--fg); }
+    header { padding:16px 20px; border-bottom:1px solid #22324a; position:sticky; top:0; background:rgba(11,18,32,0.9); backdrop-filter: blur(6px); }
+    h1 { margin:0; font-size:20px; }
+    .sub { color:var(--muted); font-size:12px; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-top:8px; }
+    input, select, button, textarea { background:#111a2b; color:var(--fg); border:1px solid #243554; border-radius:8px; padding:8px 10px; }
+    input, select { height:36px; }
+    input.wide { min-width: 360px; }
+    button { cursor:pointer; }
+    button.primary { background: #143155; border-color:#2f5a93; color:#d7ecff; }
+    button.ghost { background: transparent; border-color:#2a3b59; }
+    main { display:grid; grid-template-columns: 320px 1fr; gap:16px; padding:16px; }
+    .card { background:#0e182a; border:1px solid #1c2a43; border-radius:12px; padding:14px; }
+    .card h3 { margin:0 0 10px 0; font-size:14px; color:#cfe3ff; }
+    .list { display:flex; flex-direction:column; gap:6px; max-height: calc(100vh - 170px); overflow:auto; }
+    .ep { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px; border-radius:8px; border:1px solid #1f2c47; }
+    .method { font-weight:600; font-size:12px; padding:2px 6px; border-radius:6px; }
+    .GET { color:#6bc1ff; background:#0c1b2c; border:1px solid #123a64; }
+    .POST { color:#7dffae; background:#0c2c1e; border:1px solid #156f40; }
+    .path { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size:12px; color:#c6d9ee; }
+    .desc { font-size:11px; color:#93a8c2; }
+    .result { white-space:pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background:#0b1322; border:1px solid #1f2c47; padding:12px; border-radius:8px; min-height:140px; }
+    .grid { display:grid; gap:12px; grid-template-columns: repeat(2, minmax(300px, 1fr)); }
+    .muted { color:var(--muted); font-size:12px; }
+    .badge { font-size:11px; color:#d2e9ff; background:#10233d; border:1px solid #284d82; padding:2px 6px; border-radius:6px; }
+    .ok { color:var(--ok); }
+    .err { color:var(--err); }
+    .flex { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .copy { font-size:12px; }
+    @media (max-width: 980px) { main { grid-template-columns: 1fr; } .grid { grid-template-columns: 1fr; } }
+  </style>
+  <script>
+    const endpoints = [
+      {cat:"System", m:"GET", p:"/health", d:"Server health"},
+      {cat:"System", m:"GET", p:"/system/info", d:"Hardware info"},
+      {cat:"System", m:"GET", p:"/provider/about", d:"Provider metadata"},
+      {cat:"System", m:"GET", p:"/monitoring/summary", d:"Monitoring summary"},
+      {cat:"System", m:"GET", p:"/performance/snapshot", d:"Performance snapshot"},
+      {cat:"Models", m:"GET", p:"/models/installed", d:"Installed models"},
+      {cat:"Models", m:"GET", p:"/models/available", d:"Recommended models"},
+      {cat:"Registry", m:"GET", p:"/registry/models", d:"Model registry (not implemented)", warn:true},
+      {cat:"Registry", m:"GET", p:"/registry/validate/{model}", d:"Validate model (not implemented)", warn:true},
+      {cat:"Runtime", m:"GET", p:"/runtime/status", d:"Runtime status"},
+      {cat:"Runtime", m:"GET", p:"/runtime/config", d:"Runtime config"},
+      {cat:"Runtime", m:"POST", p:"/runtime/load/{model}?threads=4", d:"Load model"},
+      {cat:"Runtime", m:"POST", p:"/runtime/unload/{model}", d:"Unload model"},
+      {cat:"Download", m:"POST", p:"/download/start", d:"Start HF download"},
+      {cat:"Download", m:"GET", p:"/download/status/{model}", d:"Download status"},
+      {cat:"Download", m:"POST", p:"/download/cancel/{model}", d:"Cancel download"},
+      {cat:"Auth", m:"POST", p:"/auth/hf_token", d:"Set HF token"},
+      {cat:"Auth", m:"GET", p:"/auth/status", d:"Auth status"},
+      {cat:"Auth", m:"GET", p:"/auth/whoami", d:"HF whoami (not implemented)", warn:true},
+      {cat:"HF", m:"GET", p:"/hf/models?search=GGUF&limit=25", d:"Search models (not implemented)", warn:true},
+      {cat:"HF", m:"GET", p:"/hf/popular?limit=10", d:"Popular (not implemented)", warn:true},
+      {cat:"HF", m:"GET", p:"/hf/files/{repo_id}", d:"Repo files (not implemented)", warn:true},
+      {cat:"HF", m:"GET", p:"/hf/small-models", d:"Small picks (not implemented)", warn:true},
+      {cat:"Ollama", m:"GET", p:"/api/tags", d:"List models (ollama-like)"},
+      {cat:"Ollama", m:"POST", p:"/api/generate", d:"Generate"},
+      {cat:"Ollama", m:"POST", p:"/api/chat", d:"Chat"},
+      {cat:"Session", m:"POST", p:"/api/session/start", d:"Start session"},
+      {cat:"Session", m:"GET", p:"/api/session/status/{id}", d:"Session status"},
+      {cat:"Session", m:"POST", p:"/api/session/end/{id}", d:"End session"},
+      {cat:"Logs", m:"GET", p:"/logs/recent", d:"Recent request log"},
+      {cat:"Logs", m:"GET", p:"/logs/server", d:"Server log tail"},
+      {cat:"UI", m:"GET", p:"/", d:"Home"},
+      {cat:"UI", m:"GET", p:"/ui", d:"This dashboard"},
+    ];
+
+    let baseUrl = window.location.origin;
+    function q(sel){ return document.querySelector(sel); }
+    function el(tag, cls){ const e=document.createElement(tag); if(cls) e.className=cls; return e; }
+    function setBase(){ baseUrl = q('#base').value.trim() || window.location.origin; }
+    function copy(text){ navigator.clipboard.writeText(text); }
+    function curlFor(ep, body){
+      const url = baseUrl + ep.p;
+      const m = ep.m || 'GET';
+      if(m === 'GET') return `curl -s ${url}`;
+      const data = body ? JSON.stringify(body, null, 0) : '{}';
+      return `curl -s -X ${m} ${url} -H "Content-Type: application/json" -d '${data.replace(/'/g, "'\''")}'`;
+    }
+
+    async function call(ep){
+      const out = q('#out');
+      const path = q('#path').value.trim() || ep.p;
+      const method = q('#method').value || ep.m;
+      const bodyText = q('#body').value.trim();
+      const url = (q('#base').value.trim() || baseUrl) + path;
+      out.textContent = `⏳ ${method} ${url}`;
+      let payload = undefined;
+      try{ payload = bodyText ? JSON.parse(bodyText) : undefined; }catch(e){ /* ignore parse error */ }
+      const t0 = performance.now();
+      try{
+        const res = await fetch(url, {
+          method,
+          headers: payload ? { 'Content-Type': 'application/json' } : undefined,
+          body: payload ? JSON.stringify(payload) : undefined,
+        });
+        const txt = await res.text();
+        let data; try { data = JSON.parse(txt); } catch { data = txt; }
+        const ms = Math.round(performance.now()-t0);
+        out.textContent = JSON.stringify({ url, status: res.status, latency_ms: ms, data }, null, 2);
+        q('#curl').textContent = curlFor({p:path,m:method}, payload);
+      }catch(err){
+        out.textContent = `Error: ${err}`;
+      }
+    }
+
+    function pick(ep){ q('#path').value = ep.p; q('#method').value = ep.m; q('#body').value = sampleBody(ep.p) || ''; q('#curl').textContent = curlFor(ep, q('#body').value?JSON.parse(q('#body').value):undefined); }
+    function sampleBody(path){
+      if(path.startsWith('/runtime/load/')) return '';
+      if(path === '/download/start') return JSON.stringify({ model_name: 'tinyllama-gguf', repo_id: 'TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF' }, null, 2);
+      if(path === '/auth/hf_token') return JSON.stringify({ token: 'hf_xxx' }, null, 2);
+      if(path === '/api/generate') return JSON.stringify({ model:'tinyllama-gguf', prompt:'Hello!', stream:false, options:{ temperature:0.6 } }, null, 2);
+      if(path === '/api/chat') return JSON.stringify({ model:'tinyllama-gguf', messages:[{role:'user', content:'Hi'}], max_tokens:64 }, null, 2);
+      if(path.startsWith('/api/session/end/')) return '';
+      return '';
+    }
+
+    function renderList(){
+      const list = q('#list'); list.innerHTML = '';
+      const byCat = {};
+      for(const e of endpoints){ (byCat[e.cat] ||= []).push(e); }
+      for(const cat of Object.keys(byCat)){
+        const h = el('h3'); h.textContent = cat; list.appendChild(h);
+        for(const ep of byCat[cat]){
+          const row = el('div','ep');
+          const left = el('div');
+          const m = el('span', 'method ' + ep.m); m.textContent = ep.m; left.appendChild(m);
+          const path = el('span','path'); path.textContent = ep.p; left.appendChild(document.createTextNode(' ')); left.appendChild(path);
+          const desc = el('div','desc'); desc.textContent = ep.d + (ep.warn? ' (may 404)' : ''); left.appendChild(desc);
+          const btns = el('div','flex');
+          const use = el('button','primary'); use.textContent='Use'; use.onclick = () => pick(ep);
+          const cp = el('button','ghost copy'); cp.textContent='Copy curl'; cp.onclick = () => { const bodyTxt = q('#body').value.trim(); let b; try{ b = bodyTxt? JSON.parse(bodyTxt): undefined; }catch{} copy(curlFor(ep,b)); };
+          btns.appendChild(use); btns.appendChild(cp);
+          row.appendChild(left); row.appendChild(btns);
+          list.appendChild(row);
+        }
+      }
+    }
+
+    function loadDefaults(){
+      q('#base').value = window.location.origin;
+      q('#path').value = '/health'; q('#method').value = 'GET'; q('#body').value = '';
+      q('#curl').textContent = 'curl -s ' + window.location.origin + '/health';
+      renderList();
+    }
+
+    function copyCmd(id){
+      const cmds = {
+        run: 'python run.py',
+        uvicorn: 'python -m uvicorn model_server:app --host 0.0.0.0 --port 8155',
+        open_ui: 'start http://127.0.0.1:8155/ui',
+        open_logs: 'explorer C:\\model\\logs',
+        open_models: 'explorer C:\\model\\models',
+        open_runtime_log: 'notepad C:\\model\\logs\\runner_uvicorn.log',
+      };
+      copy(cmds[id] || '');
+    }
+    window.addEventListener('DOMContentLoaded', loadDefaults);
+  </script>
+</head>
+<body>
+  <header>
+    <h1>ZombieCoder API Dashboard</h1>
+    <div class="sub">Quick invoke, copy curl, and view responses</div>
+    <div class="row">
+      <input id="base" class="wide" placeholder="Base URL" oninput="setBase()" />
+      <span class="badge">Tip: defaults to window.location.origin</span>
+    </div>
+  </header>
+  <main>
+    <section class="card">
+      <h3>Endpoints</h3>
+      <div id="list" class="list"></div>
+    </section>
+    <section class="card">
+      <h3>Request</h3>
+      <div class="grid">
+        <div>
+          <label class="muted">Method</label>
+          <select id="method">
+            <option>GET</option>
+            <option>POST</option>
+          </select>
+        </div>
+        <div>
+          <label class="muted">Path</label>
+          <input id="path" class="wide" placeholder="/health" />
+        </div>
+      </div>
+      <div style="margin-top:10px">
+        <label class="muted">Body (JSON)</label>
+        <textarea id="body" rows="6" style="width:100%" placeholder="{ }"></textarea>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="primary" onclick="call({p:document.querySelector('#path').value,m:document.querySelector('#method').value})">Send</button>
+        <button class="ghost" onclick="document.querySelector('#body').value='';">Clear Body</button>
+      </div>
+      <div style="margin-top:16px">
+        <div class="muted">cURL</div>
+        <div class="result" id="curl"></div>
+        <div class="row"><button class="ghost copy" onclick="copy(document.querySelector('#curl').textContent)">Copy</button></div>
+      </div>
+      <div style="margin-top:16px">
+        <div class="muted">Response</div>
+        <div class="result" id="out">Select an endpoint then click Send</div>
+      </div>
+      <div style="margin-top:16px" class="card">
+        <h3>Quick Commands</h3>
+        <div class="row">
+          <button class="ghost copy" onclick="copyCmd('run')">Copy: python run.py</button>
+          <button class="ghost copy" onclick="copyCmd('uvicorn')">Copy: uvicorn start</button>
+          <button class="ghost copy" onclick="copyCmd('open_ui')">Copy: open UI</button>
+          <button class="ghost copy" onclick="copyCmd('open_logs')">Copy: open logs</button>
+          <button class="ghost copy" onclick="copyCmd('open_models')">Copy: open models</button>
+          <button class="ghost copy" onclick="copyCmd('open_runtime_log')">Copy: open uvicorn log</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
+
+
