@@ -12,10 +12,12 @@ from datetime import datetime
 from typing import Dict, List, Optional
 from collections import deque
 import time
+import requests
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from system_detector import detect_system_info
@@ -66,6 +68,15 @@ app = FastAPI(
     title="ZombieCoder Local AI Framework",
     description="Lightweight, lazy-load ready local AI server (skeleton)",
     version="0.1.0",
+)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],   # Allow all headers
 )
 
 # Static UI
@@ -476,6 +487,7 @@ class GenerateRequest(BaseModel):
     stream: bool = False
     options: Optional[Dict] = None
     session_id: Optional[str] = None
+    system: Optional[str] = None
 
 
 class ChatMessage(BaseModel):
@@ -486,6 +498,7 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     model: str
     messages: List[ChatMessage]
+    max_tokens: Optional[int] = 100
     stream: bool = False
     options: Optional[Dict] = None
 
@@ -508,8 +521,16 @@ async def api_generate(req: GenerateRequest):
     # Proxy to llama.cpp server completion endpoint
     try:
         url = f"http://127.0.0.1:{port}/completion"
+        # Build prompt with system context if provided
+        system_prompt = req.system or """You are ZombieCoder Local AI Assistant, powered by local models running on user's own machine. 
+Provider: ZombieCoder Local AI Framework
+Location: Running locally on user's computer (C:\\model)
+Cost: Free - 100% offline, no API costs
+You are here to help users with coding, questions, and tasks."""
+        
+        full_prompt = f"{system_prompt}\n\nUser: {req.prompt}\nAssistant:"
         # Force non-streaming single JSON response and limit tokens for low latency
-        payload = {"prompt": req.prompt, "stream": False, "n_predict": 64}
+        payload = {"prompt": full_prompt, "stream": False, "n_predict": 64}
         # Try up to ~60s to allow runtime to finish loading the model
         deadline = time.time() + 60
         last_resp = None
@@ -585,8 +606,103 @@ async def api_chat(req: ChatRequest):
     scanned = scan_models_directory(MODELS_DIR)
     if not any(m["name"] == req.model for m in scanned):
         raise HTTPException(status_code=404, detail=f"Model '{req.model}' not found")
-    # Do not return synthetic chat; enforce no-demo policy
-    raise HTTPException(status_code=501, detail="Chat disabled until inference runtime is enabled.")
+    
+    # Find running port for this model
+    rt = runtime_status()
+    port = None
+    for m in rt.get("models", []):
+        if m.get("model") == req.model and m.get("status") == "ready":
+            port = m.get("port")
+            break
+    if not port:
+        raise HTTPException(status_code=409, detail="Model is not running. Load it via /runtime/load/{model} first.")
+    
+    # Convert chat messages to prompt format
+    system_prompt = """You are ZombieCoder Local AI Assistant, powered by local models running on user's own machine. 
+Provider: ZombieCoder Local AI Framework
+Location: Running locally on user's computer (C:\\model)
+Cost: Free - 100% offline, no API costs
+You are here to help users with coding, questions, and tasks."""
+    
+    # Build conversation prompt
+    conversation = system_prompt + "\n\n"
+    for message in req.messages:
+        role = message.role
+        content = message.content
+        if role == "user":
+            conversation += f"User: {content}\n"
+        elif role == "assistant":
+            conversation += f"Assistant: {content}\n"
+    
+    conversation += "Assistant:"
+    
+    # Proxy to llama.cpp server completion endpoint
+    try:
+        url = f"http://127.0.0.1:{port}/completion"
+        payload = {
+            "prompt": conversation,
+            "stream": False,
+            "n_predict": req.max_tokens or 100
+        }
+
+        # More tolerant waiting with 503 handling like generate()
+        deadline = time.time() + 90
+        last_resp = None
+        while True:
+            try:
+                resp = requests.post(url, json=payload, timeout=20)
+                last_resp = resp
+                if resp.status_code == 200:
+                    try:
+                        data = resp.json()
+                    except ValueError:
+                        # malformed json; try again until deadline
+                        data = None
+                    if isinstance(data, dict):
+                        # Try several shapes to extract content
+                        content = None
+                        if isinstance(data.get("content"), str):
+                            content = data.get("content")
+                        elif isinstance(data.get("choices"), list) and data["choices"]:
+                            first = data["choices"][0]
+                            if isinstance(first, dict):
+                                content = first.get("text") or first.get("content")
+                        elif isinstance(data.get("response"), str):
+                            content = data.get("response")
+
+                        if isinstance(content, str):
+                            return {
+                                "model": req.model,
+                                "runtime_port": port,
+                                "runtime_response": {
+                                    "index": 0,
+                                    "content": content,
+                                },
+                            }
+
+                # llama.cpp may return 503 while still loading
+                if resp.status_code == 503 and ("loading" in resp.text.lower() or "model" in resp.text.lower()):
+                    if time.time() < deadline:
+                        time.sleep(1.0)
+                        continue
+                # For other non-200s, retry until deadline
+            except requests.exceptions.RequestException:
+                # transient network/timeouts; keep trying until deadline
+                pass
+
+            if time.time() > deadline:
+                break
+            time.sleep(1)
+
+        # If we get here, the model didn't respond successfully in time
+        if last_resp is not None:
+            raise HTTPException(status_code=500, detail=f"Model runtime error: {last_resp.status_code}")
+        raise HTTPException(status_code=500, detail="Model runtime not responding")
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Chat generation failed: {str(e)}")
 
 
 if __name__ == "__main__":
