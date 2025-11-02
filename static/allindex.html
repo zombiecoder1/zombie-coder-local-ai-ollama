@@ -5,200 +5,998 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ZombieCoder Local AI - Control Panel</title>
   <style>
-    body{font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:#0b1220;color:#e6e9ef}
-    header{padding:16px 20px;border-bottom:1px solid #1f2a44;background:#0f1628;position:sticky;top:0}
-    h1{margin:0;font-size:18px}
-    main{padding:16px;display:grid;gap:16px;grid-template-columns:1fr}
-    .card{background:#111a2e;border:1px solid #1f2a44;border-radius:10px;padding:14px}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .btn{background:#2563eb;color:#fff;border:none;border-radius:8px;padding:8px 12px;cursor:pointer}
-    .btn.outline{background:transparent;border:1px solid #2563eb;color:#cbe0ff}
-    .btn.danger{background:#b91c1c}
-    input,select{background:#0b1220;color:#e6e9ef;border:1px solid #283451;border-radius:8px;padding:8px 10px}
-    .tag{font-size:12px;padding:2px 6px;border:1px solid #2b3a5d;border-radius:999px;color:#9fb7ff}
-    table{width:100%;border-collapse:collapse}
-    th,td{border-bottom:1px solid #1f2a44;padding:8px;text-align:left;font-size:14px}
-    .ok{color:#10b981}.warn{color:#f59e0b}.bad{color:#ef4444}
-    .muted{color:#9aa6bd}
-    progress{width:160px;height:12px}
-    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
+    :root {
+      --bg-primary: #0b1220;
+      --bg-secondary: #111a2e;
+      --bg-tertiary: #0f1628;
+      --accent-primary: #3b82f6;
+      --accent-success: #10b981;
+      --accent-warning: #f59e0b;
+      --accent-danger: #ef4444;
+      --text-primary: #e6e9ef;
+      --text-secondary: #9aa6bd;
+      --text-muted: #6b7280;
+      --border-primary: #1f2a44;
+      --border-secondary: #283451;
+      --border-accent: #2563eb;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --radius: 10px;
+      --transition: all 0.2s ease-in-out;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      margin: 0;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border-primary);
+      background: var(--bg-tertiary);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo {
+      color: var(--accent-primary);
+      font-size: 24px;
+    }
+
+    main {
+      padding: 20px;
+      display: grid;
+      gap: 20px;
+      grid-template-columns: 1fr;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+
+    .card:hover {
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .btn {
+      background: var(--accent-primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+
+    .btn.outline {
+      background: transparent;
+      border: 1px solid var(--border-accent);
+      color: #cbe0ff;
+    }
+
+    .btn.outline:hover {
+      background: rgba(37, 99, 235, 0.1);
+    }
+
+    .btn.danger {
+      background: var(--accent-danger);
+    }
+
+    .btn.danger:hover {
+      background: #991b1b;
+    }
+
+    .btn.success {
+      background: var(--accent-success);
+    }
+
+    .btn.success:hover {
+      background: #047857;
+    }
+
+    input, select {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-secondary);
+      border-radius: 8px;
+      padding: 10px 12px;
+      transition: var(--transition);
+      font-family: inherit;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .tag {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 500;
+    }
+
+    .tag.ok {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent-success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .tag.warn {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent-warning);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .tag.bad {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--accent-danger);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .tag.info {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--accent-primary);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--border-primary);
+      padding: 12px 8px;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .muted {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    progress {
+      width: 160px;
+      height: 12px;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    progress::-webkit-progress-bar {
+      background-color: var(--bg-primary);
+      border-radius: 6px;
+    }
+
+    progress::-webkit-progress-value {
+      background-color: var(--accent-primary);
+      border-radius: 6px;
+    }
+
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .status-dot.ok {
+      background: var(--accent-success);
+    }
+
+    .status-dot.warn {
+      background: var(--accent-warning);
+    }
+
+    .status-dot.bad {
+      background: var(--accent-danger);
+    }
+
+    .token-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .token-input-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .token-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .token-expiry {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .model-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .model-card {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius);
+      padding: 16px;
+      transition: var(--transition);
+    }
+
+    .model-card:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-2px);
+    }
+
+    .model-name {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .model-repo {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    .model-description {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .model-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .model-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .generate-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .generate-inputs {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .generate-output {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-primary);
+      border-radius: 8px;
+      padding: 16px;
+      min-height: 120px;
+      max-height: 300px;
+      overflow: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      white-space: pre-wrap;
+      font-size: 13px;
+    }
+
+    .notification {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--accent-success);
+      color: white;
+      padding: 12px 18px;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: slideIn 0.3s ease;
+    }
+
+    .cache-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--accent-warning);
+      margin-left: 8px;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @media (max-width: 768px) {
+      main {
+        padding: 16px;
+        gap: 16px;
+      }
+      
+      .card {
+        padding: 16px;
+      }
+      
+      .token-input-group, .generate-inputs {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .model-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>ZombieCoder Local AI — Gateway</h1>
+    <h1><span class="logo">🧠</span> ZombieCoder Local AI — Control Panel</h1>
   </header>
   <main>
     <section class="card" id="health">
-      <div class="row"><strong>Health</strong><span id="healthStatus" class="tag">…</span></div>
+      <div class="card-header">
+        <div class="card-title">System Health</div>
+        <div id="healthStatus" class="tag">Checking...</div>
+      </div>
       <div class="muted mono" id="healthMeta"></div>
     </section>
 
     <section class="card" id="auth">
-      <div class="row"><strong>HuggingFace Login</strong><span id="authFlag" class="tag">checking…</span></div>
-      <div class="row">
-        <input id="hfToken" type="password" placeholder="hf_xxx token" style="min-width:340px" />
-        <button class="btn" onclick="saveToken()">Save Token</button>
+      <div class="card-header">
+        <div class="card-title">HuggingFace Authentication</div>
+        <div class="token-status">
+          <span id="authFlag" class="tag">Checking...</span>
+        </div>
       </div>
-      <div class="muted">টোকেন দিন → মডেল ডিসকভারি/ডাউনলোড সক্রিয় হবে।</div>
+      <div class="token-section">
+        <div class="token-input-group">
+          <input id="hfToken" type="password" placeholder="hf_xxx token" style="flex: 1; min-width: 300px;" />
+          <button class="btn" onclick="saveToken()">
+            <span>💾</span> Save Token
+          </button>
+          <button class="btn outline" onclick="clearToken()">
+            <span>🗑️</span> Clear
+          </button>
+        </div>
+        <div class="muted">
+          টোকেন দিন → মডেল ডিসকভারি/ডাউনলোড সক্রিয় হবে। টোকেন ৩০ দিনের জন্য সংরক্ষিত হবে।
+        </div>
+        <div id="tokenExpiry" class="token-expiry"></div>
+      </div>
     </section>
 
     <section class="card" id="available">
-      <div class="row"><strong>Discover & Download</strong><span class="tag" id="tier">…</span></div>
-      <table>
-        <thead><tr><th>Model</th><th>Description</th><th>Size</th><th>Compat</th><th>Action</th><th>Status</th></tr></thead>
-        <tbody id="availBody"></tbody>
-      </table>
+      <div class="card-header">
+        <div class="card-title">Discover & Download Models</div>
+        <div class="tag info" id="tier">Loading system info...</div>
+      </div>
+      <div class="muted" id="availableInfo">Recommended models based on your system configuration</div>
+      <div class="model-grid" id="availBody"></div>
     </section>
 
     <section class="card" id="installed">
-      <div class="row"><strong>Installed Models</strong><span class="tag" id="installedCount">…</span></div>
+      <div class="card-header">
+        <div class="card-title">Installed Models</div>
+        <div class="tag info" id="installedCount">Loading...</div>
+      </div>
       <table>
-        <thead><tr><th>Name</th><th>Size</th><th>Runtime</th><th>Action</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Size</th>
+            <th>Runtime Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
         <tbody id="instBody"></tbody>
       </table>
     </section>
 
     <section class="card" id="chat">
-      <div class="row"><strong>Quick Generate</strong><span class="muted">(uses /api/generate)</span></div>
-      <div class="row">
-        <select id="genModel" title="Select Ready Model"></select>
-        <input id="genPrompt" placeholder="Prompt" style="min-width:360px" />
-        <button class="btn" onclick="doGenerate()">Generate</button>
+      <div class="card-header">
+        <div class="card-title">Quick Generate</div>
+        <span class="muted">(uses /api/generate endpoint)</span>
       </div>
-      <pre class="mono" id="genOut" style="white-space:pre-wrap"></pre>
+      <div class="generate-section">
+        <div class="generate-inputs">
+          <select id="genModel" title="Select Ready Model">
+            <option value="">Select a loaded model...</option>
+          </select>
+          <input id="genPrompt" placeholder="Enter your prompt here..." style="flex: 1; min-width: 300px;" />
+          <button class="btn success" onclick="doGenerate()">
+            <span>⚡</span> Generate
+          </button>
+        </div>
+        <div class="generate-output" id="genOut">Output will appear here...</div>
+      </div>
     </section>
   </main>
 
   <script>
   const base = '';
+  
+  // Storage Keys
+  const TOKEN_KEY = 'hf_token';
+  const TOKEN_EXPIRY_KEY = 'hf_token_expiry';
+  const MODELS_CACHE_KEY = 'models_cache';
+  const INSTALLED_CACHE_KEY = 'installed_cache';
+  const HEALTH_CACHE_KEY = 'health_cache';
+  const CACHE_TIMESTAMP_KEY = 'cache_timestamp';
+  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
 
-  async function jget(path){ const r = await fetch(base+path); return await r.json(); }
-  async function jpost(path, body){ const r= await fetch(base+path,{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body||{})}); return await r.json(); }
+  // Cache Management Functions
+  function saveToCache(key, data) {
+    const cacheData = {
+      data: data,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(key, JSON.stringify(cacheData));
+  }
 
-  async function refreshHealth(){
-    try{
-      const h = await jget('/health');
-      document.getElementById('healthStatus').textContent = 'OK';
-      document.getElementById('healthStatus').className='tag ok';
-      document.getElementById('healthMeta').textContent = `${h.service} | port ${h.port} | uptime ${h.uptime_sec}s`;
-    }catch(e){
-      document.getElementById('healthStatus').textContent = 'DOWN';
-      document.getElementById('healthStatus').className='tag bad';
+  function getFromCache(key) {
+    try {
+      const cached = localStorage.getItem(key);
+      if (!cached) return null;
+      
+      const cacheData = JSON.parse(cached);
+      const now = Date.now();
+      
+      // Check if cache is still valid
+      if (now - cacheData.timestamp < CACHE_DURATION) {
+        return cacheData.data;
+      } else {
+        // Cache expired, remove it
+        localStorage.removeItem(key);
+        return null;
+      }
+    } catch (e) {
+      console.error('Cache read error:', e);
+      return null;
     }
   }
 
-  async function refreshAuth(){
+  function clearCache() {
+    localStorage.removeItem(MODELS_CACHE_KEY);
+    localStorage.removeItem(INSTALLED_CACHE_KEY);
+    localStorage.removeItem(HEALTH_CACHE_KEY);
+    localStorage.removeItem(CACHE_TIMESTAMP_KEY);
+  }
+
+  function isCacheValid() {
+    const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+    if (!timestamp) return false;
+    
+    const now = Date.now();
+    return (now - parseInt(timestamp)) < CACHE_DURATION;
+  }
+
+  // Token management functions
+  function saveTokenToStorage(token) {
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 30);
+    
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(TOKEN_EXPIRY_KEY, expiryDate.toISOString());
+    
+    document.getElementById('hfToken').value = token;
+    showNotification('Token saved for 30 days');
+    updateTokenExpiryDisplay();
+  }
+
+  function getTokenFromStorage() {
+    const token = localStorage.getItem(TOKEN_KEY);
+    const expiry = localStorage.getItem(TOKEN_EXPIRY_KEY);
+    
+    if (!token || !expiry) return null;
+    
+    const now = new Date();
+    const expiryDate = new Date(expiry);
+    
+    if (now > expiryDate) {
+      clearTokenFromStorage();
+      return null;
+    }
+    
+    return token;
+  }
+
+  function clearTokenFromStorage() {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(TOKEN_EXPIRY_KEY);
+    document.getElementById('hfToken').value = '';
+    document.getElementById('tokenExpiry').textContent = '';
+    showNotification('Token cleared');
+  }
+
+  function updateTokenExpiryDisplay() {
+    const expiry = localStorage.getItem(TOKEN_EXPIRY_KEY);
+    if (!expiry) {
+      document.getElementById('tokenExpiry').textContent = '';
+      return;
+    }
+    
+    const expiryDate = new Date(expiry);
+    const now = new Date();
+    const daysLeft = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+    
+    if (daysLeft > 0) {
+      document.getElementById('tokenExpiry').textContent = `Token expires in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}`;
+    } else {
+      document.getElementById('tokenExpiry').textContent = 'Token expired';
+      clearTokenFromStorage();
+    }
+  }
+
+  function showNotification(message, isError = false) {
+    const existing = document.querySelector('.notification');
+    if (existing) existing.remove();
+    
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.style.background = isError ? 'var(--accent-danger)' : 'var(--accent-success)';
+    notification.innerHTML = isError ? `❌ ${message}` : `✅ ${message}`;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 3000);
+  }
+
+  // API functions with caching
+  async function jget(path, useCache = true) {
+    const cacheKey = path.replace(/\//g, '_');
+    
+    // Try to get from cache first
+    if (useCache) {
+      const cached = getFromCache(cacheKey);
+      if (cached) {
+        console.log(`Using cached data for: ${path}`);
+        return cached;
+      }
+    }
+    
+    // Fetch from API
+    try {
+      const r = await fetch(base + path);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      
+      const data = await r.json();
+      
+      // Save to cache
+      if (useCache) {
+        saveToCache(cacheKey, data);
+      }
+      
+      return data;
+    } catch (error) {
+      // If fetch fails, try to return cached data even if expired
+      const cached = getFromCache(cacheKey);
+      if (cached) {
+        console.log(`API failed, using expired cache for: ${path}`);
+        return cached;
+      }
+      throw error;
+    }
+  }
+  
+  async function jpost(path, body) {
+    const r = await fetch(base + path, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body || {})
+    });
+    
+    // Clear relevant cache on POST operations
+    if (path.includes('/download/start')) {
+      clearCache(); // Clear all cache when downloading new models
+    } else if (path.includes('/runtime/load') || path.includes('/runtime/unload')) {
+      localStorage.removeItem('_runtime_status'); // Clear runtime cache
+    }
+    
+    return await r.json();
+  }
+
+  async function refreshHealth(useCache = true){
     try{
-      const a = await jget('/auth/status');
-      const el = document.getElementById('authFlag');
-      if(a.token_set){ el.textContent='token: set'; el.className='tag ok'; }
-      else { el.textContent='token: missing'; el.className='tag warn'; }
+      const h = await jget('/health', useCache);
+      document.getElementById('healthStatus').textContent = 'OPERATIONAL';
+      document.getElementById('healthStatus').className='tag ok';
+      document.getElementById('healthMeta').textContent = `${h.service} | port ${h.port} | uptime ${h.uptime_sec}s`;
     }catch(e){
-      const el = document.getElementById('authFlag'); el.textContent='n/a'; el.className='tag bad';
+      document.getElementById('healthStatus').textContent = 'SERVICE DOWN';
+      document.getElementById('healthStatus').className='tag bad';
+      document.getElementById('healthMeta').textContent = 'Unable to connect to API service';
+    }
+  }
+
+  async function refreshAuth(useCache = true){
+    try{
+      const a = await jget('/auth/status', useCache);
+      const el = document.getElementById('authFlag');
+      if(a.token_set){ 
+        el.textContent='TOKEN SET';
+        el.className='tag ok';
+      } else { 
+        el.textContent='TOKEN MISSING';
+        el.className='tag warn'; 
+      }
+    }catch(e){
+      const el = document.getElementById('authFlag'); 
+      el.textContent='UNAVAILABLE';
+      el.className='tag bad';
     }
   }
 
   async function saveToken(){
-    const t = document.getElementById('hfToken').value.trim();
-    if(!t){ alert('Token required'); return; }
-    try{ await jpost('/auth/hf_token', {token:t}); await refreshAuth(); alert('Token saved'); }catch(e){ alert('Token failed'); }
+    let t = document.getElementById('hfToken').value.trim();
+    
+    if (!t) {
+      t = getTokenFromStorage();
+      if (!t) {
+        showNotification('Please enter a token', true);
+        return;
+      }
+    }
+    
+    try{ 
+      await jpost('/auth/hf_token', {token:t}); 
+      saveTokenToStorage(t);
+      await refreshAuth(false); // Force refresh without cache
+    }catch(e){ 
+      showNotification('Failed to save token: ' + e, true); 
+    }
   }
 
-  function bytesStr(n){ if(!n) return '—'; const mb = n/1024/1024; return mb>1024? (mb/1024).toFixed(2)+' GB' : mb.toFixed(1)+' MB'; }
+  function clearToken() {
+    clearTokenFromStorage();
+    refreshAuth(false);
+  }
 
-  async function refreshAvailable(){
-    const sys = await jget('/system/info');
-    document.getElementById('tier').textContent = `tier: ${sys.tier}${sys.vram_mb? ', vram: '+sys.vram_mb+' MB':''}`;
-    const data = await jget('/models/available');
-    const tbody = document.getElementById('availBody'); tbody.innerHTML='';
-    for(const m of data){
-      const tr = document.createElement('tr');
-      const repo = m.huggingface_id || '';
-      tr.innerHTML = `
-        <td><div>${m.name}</div><div class="muted mono">${repo}</div></td>
-        <td>${m.description||''}</td>
-        <td>${m.size||''}</td>
-        <td><span class="tag">${m.compatibility||'compatible'}</span></td>
-        <td>
-          <button class="btn" onclick="startDownload('${(m.name||'').replaceAll('"','')}', '${(repo||'').replaceAll('"','')}')">Download</button>
-        </td>
-        <td id="dstat-${m.name}">—</td>
-      `;
-      tbody.appendChild(tr);
+  function bytesStr(n){ 
+    if(!n) return '—'; 
+    const mb = n/1024/1024; 
+    return mb>1024? (mb/1024).toFixed(2)+' GB' : mb.toFixed(1)+' MB'; 
+  }
+
+  async function refreshAvailable(useCache = true){
+    try {
+      const sys = await jget('/system/info', useCache);
+      document.getElementById('tier').textContent = `Tier: ${sys.tier}${sys.vram_mb? ' | VRAM: '+sys.vram_mb+' MB':''}`;
+      
+      const data = await jget('/models/available', useCache);
+      const container = document.getElementById('availBody'); 
+      container.innerHTML='';
+      
+      if (!data || data.length === 0) {
+        container.innerHTML = '<div class="muted">No models available for your system configuration</div>';
+        return;
+      }
+      
+      // Add cache indicator
+      const cacheIndicator = useCache && getFromCache('_models_available') ? 
+        '<span class="cache-indicator">💾 Cached</span>' : '';
+      document.getElementById('availableInfo').innerHTML = `Recommended models based on your system configuration ${cacheIndicator}`;
+      
+      for(const m of data){
+        const card = document.createElement('div');
+        card.className = 'model-card';
+        
+        const repo = m.huggingface_id || '';
+        const compatibility = m.compatibility || 'compatible';
+        
+        card.innerHTML = `
+          <div class="model-name">${m.name}</div>
+          <div class="model-repo">${repo}</div>
+          <div class="model-description">${m.description||'No description available'}</div>
+          <div class="model-meta">
+            <span>${m.size||'Size unknown'}</span>
+            <span class="tag ${compatibility === 'compatible' ? 'ok' : 'warn'}">${compatibility}</span>
+          </div>
+          <div class="model-actions">
+            <button class="btn" onclick="startDownload('${(m.name||'').replaceAll('"','')}', '${(repo||'').replaceAll('"','')}')">
+              <span>⬇️</span> Download
+            </button>
+            <div class="muted" id="dstat-${m.name}" style="margin-left: auto; font-size: 12px;">—</div>
+          </div>
+        `;
+        container.appendChild(card);
+      }
+    } catch (e) {
+      document.getElementById('availBody').innerHTML = '<div class="muted">Error loading available models</div>';
     }
   }
 
   async function startDownload(modelName, repoId){
-    if(!repoId){ alert('No repo configured for this entry'); return; }
-    const payload = { model_name: modelName.toLowerCase().replaceAll(/[^a-z0-9_\-]/g,''), repo_id: repoId };
+    if(!repoId){ 
+      showNotification('No repository configured for this model', true);
+      return; 
+    }
+    
+    const payload = { 
+      model_name: modelName.toLowerCase().replaceAll(/[^a-z0-9_\-]/g,''), 
+      repo_id: repoId 
+    };
+    
     try{
       const res = await jpost('/download/start', payload);
-      document.getElementById('dstat-'+modelName).textContent = 'starting…';
+      document.getElementById('dstat-'+modelName).textContent = 'Starting download...';
+      showNotification(`Download started for ${modelName}`);
       pollDownload(payload.model_name);
-    }catch(e){ alert('Download failed: '+e); }
+    }catch(e){ 
+      showNotification('Download failed: ' + e, true); 
+    }
   }
 
   async function pollDownload(model){
     for(let i=0;i<120;i++){
       try{
-        const s = await jget('/download/status/'+model);
-        const cell = document.getElementById('dstat-'+model) || document.getElementById('dstat-'+model.toUpperCase()) || document.getElementById('dstat-'+model.toLowerCase());
-        if(cell){ cell.textContent = (s.status||'') + (s.job? ` (${s.job.returncode??'running'})` : ''); }
+        const s = await jget('/download/status/'+model, false); // Don't cache download status
+        const element = document.getElementById('dstat-'+model) || 
+                       document.getElementById('dstat-'+model.toUpperCase()) || 
+                       document.getElementById('dstat-'+model.toLowerCase());
+        
+        if(element){ 
+          element.textContent = (s.status||'') + (s.job? ` (${s.job.returncode??'running'})` : ''); 
+          
+          if (s.status === 'complete') {
+            showNotification(`Download completed for ${model}`);
+            clearCache(); // Clear cache to refresh installed models
+            break;
+          }
+        }
       }catch(e){}
       await new Promise(r=>setTimeout(r,2000));
     }
-    refreshInstalled();
+    refreshInstalled(false); // Force refresh without cache
   }
 
-  async function refreshInstalled(){
-    const inst = await jget('/models/installed');
-    const rt = await jget('/runtime/status');
-    const tbody = document.getElementById('instBody'); tbody.innerHTML='';
-    document.getElementById('installedCount').textContent = `${inst.count} models`;
-    const running = {}; for(const m of (rt.models||[])){ running[m.model]=m; }
-    for(const m of (inst.models||[])){
-      const r = running[m.name];
-      const rtxt = r? `${r.status} ${r.port? '(port '+r.port+')':''}` : 'stopped';
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${m.name}</td>
-        <td>${bytesStr(m.size_mb*1024*1024)}</td>
-        <td>${rtxt}</td>
-        <td>
-          <button class="btn" onclick="loadModel('${m.name}')">Load</button>
-          <button class="btn outline" onclick="unloadModel('${m.name}')">Unload</button>
-        </td>`;
-      tbody.appendChild(tr);
-    }
-
-    // update generate model choices
-    const sel = document.getElementById('genModel'); sel.innerHTML='';
-    for(const m of (rt.models||[])){
-      if(m.status==='ready'){
-        const opt = document.createElement('option'); opt.value=m.model; opt.textContent=`${m.model} (port ${m.port})`; sel.appendChild(opt);
+  async function refreshInstalled(useCache = true){
+    try {
+      const inst = await jget('/models/installed', useCache);
+      const rt = await jget('/runtime/status', useCache);
+      const tbody = document.getElementById('instBody'); 
+      tbody.innerHTML='';
+      
+      document.getElementById('installedCount').textContent = `${inst.count || 0} models installed`;
+      
+      const running = {}; 
+      for(const m of (rt.models||[])){ 
+        running[m.model]=m; 
       }
+      
+      if (!inst.models || inst.models.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4" style="text-align: center; color: var(--text-secondary);">
+              No models installed yet. Download models from the section above.
+            </td>
+          </tr>
+        `;
+      } else {
+        for(const m of (inst.models||[])){
+          const r = running[m.name];
+          const statusText = r ? `${r.status} ${r.port ? '(port '+r.port+')' : ''}` : 'stopped';
+          const statusClass = r ? (r.status === 'ready' ? 'ok' : 'warn') : 'bad';
+          
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${m.name}</strong></td>
+            <td>${bytesStr(m.size_mb*1024*1024)}</td>
+            <td>
+              <div class="status-indicator">
+                <span class="status-dot ${statusClass}"></span>
+                <span>${statusText}</span>
+              </div>
+            </td>
+            <td>
+              <button class="btn" onclick="loadModel('${m.name}')">
+                <span>🚀</span> Load
+              </button>
+              <button class="btn outline" onclick="unloadModel('${m.name}')">
+                <span>⏹️</span> Unload
+              </button>
+            </td>`;
+          tbody.appendChild(tr);
+        }
+      }
+
+      // Update generate model choices
+      const sel = document.getElementById('genModel'); 
+      sel.innerHTML = '<option value="">Select a loaded model...</option>';
+      
+      for(const m of (rt.models||[])){
+        if(m.status==='ready'){
+          const opt = document.createElement('option'); 
+          opt.value=m.model; 
+          opt.textContent=`${m.model} (port ${m.port})`; 
+          sel.appendChild(opt);
+        }
+      }
+    } catch (e) {
+      console.error('Error refreshing installed models:', e);
     }
   }
 
-  async function loadModel(name){ try{ await jpost('/runtime/load/'+encodeURIComponent(name), {}); await refreshInstalled(); }catch(e){ alert('Load failed'); } }
-  async function unloadModel(name){ try{ await jpost('/runtime/unload/'+encodeURIComponent(name), {}); await refreshInstalled(); }catch(e){ alert('Unload failed'); } }
+  async function loadModel(name){ 
+    try{ 
+      await jpost('/runtime/load/'+encodeURIComponent(name), {}); 
+      showNotification(`Model ${name} loaded successfully`);
+      await refreshInstalled(false); // Force refresh without cache
+    }catch(e){ 
+      showNotification('Failed to load model: ' + e, true); 
+    } 
+  }
+  
+  async function unloadModel(name){ 
+    try{ 
+      await jpost('/runtime/unload/'+encodeURIComponent(name), {}); 
+      showNotification(`Model ${name} unloaded`);
+      await refreshInstalled(false); // Force refresh without cache
+    }catch(e){ 
+      showNotification('Failed to unload model: ' + e, true); 
+    } 
+  }
 
   async function doGenerate(){
-    const model = document.getElementById('genModel').value; const prompt = document.getElementById('genPrompt').value;
-    if(!model){ alert('Select a ready model first'); return; }
-    const res = await jpost('/api/generate', {model, prompt, stream:false});
-    document.getElementById('genOut').textContent = JSON.stringify(res, null, 2);
+    const model = document.getElementById('genModel').value; 
+    const prompt = document.getElementById('genPrompt').value;
+    
+    if(!model){ 
+      showNotification('Please select a loaded model first', true);
+      return; 
+    }
+    
+    if(!prompt){ 
+      showNotification('Please enter a prompt', true);
+      return; 
+    }
+    
+    try {
+      document.getElementById('genOut').textContent = 'Generating...';
+      const res = await jpost('/api/generate', {model, prompt, stream:false});
+      document.getElementById('genOut').textContent = JSON.stringify(res, null, 2);
+    } catch(e) {
+      document.getElementById('genOut').textContent = 'Error: ' + e;
+      showNotification('Generation failed: ' + e, true);
+    }
   }
 
   async function loop(){
-    await refreshHealth(); await refreshAuth(); await refreshAvailable(); await refreshInstalled();
-    setInterval(refreshHealth, 5000);
-    setInterval(refreshInstalled, 6000);
+    // Load token from storage on startup
+    const savedToken = getTokenFromStorage();
+    if (savedToken) {
+      document.getElementById('hfToken').value = savedToken;
+      await saveToken();
+    }
+    
+    updateTokenExpiryDisplay();
+    
+    // First load: try cache first
+    await refreshHealth(true);
+    await refreshAuth(true);
+    await refreshAvailable(true);
+    await refreshInstalled(true);
+    
+    // Then do background refresh without cache
+    setTimeout(async () => {
+      await refreshHealth(false);
+      await refreshAuth(false);
+      await refreshAvailable(false);
+      await refreshInstalled(false);
+    }, 1000);
+    
+    // Set up periodic refresh (with cache)
+    setInterval(() => refreshHealth(true), 10000);
+    setInterval(() => refreshInstalled(true), 15000);
+    setInterval(updateTokenExpiryDisplay, 60000);
   }
-  loop();
+  
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', loop);
   </script>
 </body>
 </html>
-
-

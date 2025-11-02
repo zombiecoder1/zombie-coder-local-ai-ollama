@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ZombieCoder Local AI - Control Panel</title>
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:#0b1220;color:#e6e9ef}
+    header{padding:16px 20px;border-bottom:1px solid #1f2a44;background:#0f1628;position:sticky;top:0}
+    h1{margin:0;font-size:18px}
+    main{padding:16px;display:grid;gap:16px;grid-template-columns:1fr}
+    .card{background:#111a2e;border:1px solid #1f2a44;border-radius:10px;padding:14px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .btn{background:#2563eb;color:#fff;border:none;border-radius:8px;padding:8px 12px;cursor:pointer}
+    .btn.outline{background:transparent;border:1px solid #2563eb;color:#cbe0ff}
+    .btn.danger{background:#b91c1c}
+    input,select{background:#0b1220;color:#e6e9ef;border:1px solid #283451;border-radius:8px;padding:8px 10px}
+    .tag{font-size:12px;padding:2px 6px;border:1px solid #2b3a5d;border-radius:999px;color:#9fb7ff}
+    table{width:100%;border-collapse:collapse}
+    th,td{border-bottom:1px solid #1f2a44;padding:8px;text-align:left;font-size:14px}
+    .ok{color:#10b981}.warn{color:#f59e0b}.bad{color:#ef4444}
+    .muted{color:#9aa6bd}
+    progress{width:160px;height:12px}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ZombieCoder Local AI — Gateway</h1>
+  </header>
+  <main>
+    <section class="card" id="health">
+      <div class="row"><strong>Health</strong><span id="healthStatus" class="tag">…</span></div>
+      <div class="muted mono" id="healthMeta"></div>
+    </section>
+
+    <section class="card" id="auth">
+      <div class="row"><strong>HuggingFace Login</strong><span id="authFlag" class="tag">checking…</span></div>
+      <div class="row">
+        <input id="hfToken" type="password" placeholder="hf_xxx token" style="min-width:340px" value="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" />
+        <button class="btn" onclick="saveToken()">Save Token</button>
+      </div>
+      <div class="muted">টোকেন দিন → মডেল ডিসকভারি/ডাউনলোড সক্রিয় হবে।</div>
+    </section>
+
+    <section class="card" id="available">
+      <div class="row"><strong>Discover & Download</strong><span class="tag" id="tier">…</span></div>
+      <table>
+        <thead><tr><th>Model</th><th>Description</th><th>Size</th><th>Compat</th><th>Action</th><th>Status</th></tr></thead>
+        <tbody id="availBody"></tbody>
+      </table>
+    </section>
+
+    <section class="card" id="installed">
+      <div class="row"><strong>Installed Models</strong><span class="tag" id="installedCount">…</span></div>
+      <table>
+        <thead><tr><th>Name</th><th>Size</th><th>Runtime</th><th>Action</th></tr></thead>
+        <tbody id="instBody"></tbody>
+      </table>
+    </section>
+
+    <section class="card" id="chat">
+      <div class="row"><strong>Quick Generate</strong><span class="muted">(uses /api/generate)</span></div>
+      <div class="row">
+        <select id="genModel" title="Select Ready Model"></select>
+        <input id="genPrompt" placeholder="Prompt" style="min-width:360px" />
+        <button class="btn" onclick="doGenerate()">Generate</button>
+      </div>
+      <pre class="mono" id="genOut" style="white-space:pre-wrap"></pre>
+    </section>
+  </main>
+
+  <script>
+  const base = '';
+
+  async function jget(path){ const r = await fetch(base+path); return await r.json(); }
+  async function jpost(path, body){ const r= await fetch(base+path,{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body||{})}); return await r.json(); }
+
+  async function refreshHealth(){
+    try{
+      const h = await jget('/health');
+      document.getElementById('healthStatus').textContent = 'OK';
+      document.getElementById('healthStatus').className='tag ok';
+      document.getElementById('healthMeta').textContent = `${h.service} | port ${h.port} | uptime ${h.uptime_sec}s`;
+    }catch(e){
+      document.getElementById('healthStatus').textContent = 'DOWN';
+      document.getElementById('healthStatus').className='tag bad';
+    }
+  }
+
+  async function refreshAuth(){
+    try{
+      const a = await jget('/auth/status');
+      const el = document.getElementById('authFlag');
+      if(a.token_set){ el.textContent='token: set'; el.className='tag ok'; }
+      else { el.textContent='token: missing'; el.className='tag warn'; }
+    }catch(e){
+      const el = document.getElementById('authFlag'); el.textContent='n/a'; el.className='tag bad';
+    }
+  }
+
+  async function saveToken(){
+    const t = document.getElementById('hfToken').value.trim();
+    if(!t){ alert('Token required'); return; }
+    try{ await jpost('/auth/hf_token', {token:t}); await refreshAuth(); alert('Token saved'); }catch(e){ alert('Token failed'); }
+  }
+
+  function bytesStr(n){ if(!n) return '—'; const mb = n/1024/1024; return mb>1024? (mb/1024).toFixed(2)+' GB' : mb.toFixed(1)+' MB'; }
+
+  async function refreshAvailable(){
+    const sys = await jget('/system/info');
+    document.getElementById('tier').textContent = `tier: ${sys.tier}${sys.vram_mb? ', vram: '+sys.vram_mb+' MB':''}`;
+    const data = await jget('/models/available');
+    const tbody = document.getElementById('availBody'); tbody.innerHTML='';
+    for(const m of data){
+      const tr = document.createElement('tr');
+      const repo = m.huggingface_id || '';
+      tr.innerHTML = `
+        <td><div>${m.name}</div><div class="muted mono">${repo}</div></td>
+        <td>${m.description||''}</td>
+        <td>${m.size||''}</td>
+        <td><span class="tag">${m.compatibility||'compatible'}</span></td>
+        <td>
+          <button class="btn" onclick="startDownload('${(m.name||'').replaceAll('"','')}', '${(repo||'').replaceAll('"','')}')">Download</button>
+        </td>
+        <td id="dstat-${m.name}">—</td>
+      `;
+      tbody.appendChild(tr);
+    }
+  }
+
+  async function startDownload(modelName, repoId){
+    if(!repoId){ alert('No repo configured for this entry'); return; }
+    const payload = { model_name: modelName.toLowerCase().replaceAll(/[^a-z0-9_\-]/g,''), repo_id: repoId };
+    try{
+      const res = await jpost('/download/start', payload);
+      document.getElementById('dstat-'+modelName).textContent = 'starting…';
+      pollDownload(payload.model_name);
+    }catch(e){ alert('Download failed: '+e); }
+  }
+
+  async function pollDownload(model){
+    for(let i=0;i<120;i++){
+      try{
+        const s = await jget('/download/status/'+model);
+        const cell = document.getElementById('dstat-'+model) || document.getElementById('dstat-'+model.toUpperCase()) || document.getElementById('dstat-'+model.toLowerCase());
+        if(cell){ cell.textContent = (s.status||'') + (s.job? ` (${s.job.returncode??'running'})` : ''); }
+      }catch(e){}
+      await new Promise(r=>setTimeout(r,2000));
+    }
+    refreshInstalled();
+  }
+
+  async function refreshInstalled(){
+    const inst = await jget('/models/installed');
+    const rt = await jget('/runtime/status');
+    const tbody = document.getElementById('instBody'); tbody.innerHTML='';
+    document.getElementById('installedCount').textContent = `${inst.count} models`;
+    const running = {}; for(const m of (rt.models||[])){ running[m.model]=m; }
+    for(const m of (inst.models||[])){
+      const r = running[m.name];
+      const rtxt = r? `${r.status} ${r.port? '(port '+r.port+')':''}` : 'stopped';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${m.name}</td>
+        <td>${bytesStr(m.size_mb*1024*1024)}</td>
+        <td>${rtxt}</td>
+        <td>
+          <button class="btn" onclick="loadModel('${m.name}')">Load</button>
+          <button class="btn outline" onclick="unloadModel('${m.name}')">Unload</button>
+        </td>`;
+      tbody.appendChild(tr);
+    }
+
+    // update generate model choices
+    const sel = document.getElementById('genModel'); sel.innerHTML='';
+    for(const m of (rt.models||[])){
+      if(m.status==='ready'){
+        const opt = document.createElement('option'); opt.value=m.model; opt.textContent=`${m.model} (port ${m.port})`; sel.appendChild(opt);
+      }
+    }
+  }
+
+  async function loadModel(name){ try{ await jpost('/runtime/load/'+encodeURIComponent(name), {}); await refreshInstalled(); }catch(e){ alert('Load failed'); } }
+  async function unloadModel(name){ try{ await jpost('/runtime/unload/'+encodeURIComponent(name), {}); await refreshInstalled(); }catch(e){ alert('Unload failed'); } }
+
+  async function doGenerate(){
+    const model = document.getElementById('genModel').value; const prompt = document.getElementById('genPrompt').value;
+    if(!model){ alert('Select a ready model first'); return; }
+    const res = await jpost('/api/generate', {model, prompt, stream:false});
+    document.getElementById('genOut').textContent = JSON.stringify(res, null, 2);
+  }
+
+  async function loop(){
+    await refreshHealth(); await refreshAuth(); await refreshAvailable(); await refreshInstalled();
+    setInterval(refreshHealth, 5000);
+    setInterval(refreshInstalled, 6000);
+  }
+  loop();
+  </script>
+</body>
+</html>
+
+

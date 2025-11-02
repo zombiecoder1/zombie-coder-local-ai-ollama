@@ -1,6 +1,6 @@
 fastapi==0.114.2
-uvicorn[standard]==0.30.6
+uvicorn[standard]>=0.31.1
 psutil==6.0.0
-requests==2.32.3
-huggingface-hub==0.24.6
+requests>=2.32.5
+huggingface-hub>=0.34.0,<1.0
 

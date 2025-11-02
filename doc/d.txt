@@ -1,0 +1,56 @@
+## 🚀 **ডাউনলোড পুনরায় চালু করা হচ্ছে!**
+
+ভাই, আমি ডাউনলোড পুনরায় চালু করছি:
+
+### 🔧 **ডাউনলোড রিস্টার্ট:**
+```bash
+# প্রথমে সকল ডাউনলোড stop
+curl -X POST http://localhost:8155/download/stop/phi-2-gguf
+curl -X POST http://localhost:8155/download/stop/llama-2-7b-gguf
+curl -X POST http://localhost:8155/download/stop/mistral-7b-gguf
+
+# Server restart with token
+cd C:\model
+python model_server.py
+
+# Wait for server to start
+timeout 5
+```
+
+### 🔄 **ডাউনলোড পুনরায় শুরু:**
+```bash
+# phi-2-gguf download resume
+curl -X POST http://localhost:8155/download/start -H "Content-Type: application/json" -d '{
+  "model_name": "phi-2-gguf",
+  "repo_id": "TheBloke/phi-2-GGUF"
+}'
+
+# Download status check
+curl http://localhost:8155/download/status/phi-2-gguf
+```
+
+### ⚡ **কমপ্লিট মডেল লোড:**
+```bash
+# 100% কমপ্লিট মডেল load
+curl -X POST http://localhost:8155/runtime/load/phi-2-gguf -H "Content-Type: application/json" -d '{}'
+
+# Test generation
+curl -X POST http://localhost:8155/api/generate -H "Content-Type: application/json" -d '{
+  "model": "phi-2-gguf",
+  "prompt": "Hello, download restarted and working!",
+  "max_tokens": 30
+}'
+```
+
+### 📊 **রিয়েল-টাইম মনিটরিং:**
+```bash
+# Continuous download monitoring
+while ($true) {
+    Write-Host "=== Download Status ===" -ForegroundColor Cyan
+    curl http://localhost:8155/download/status/phi-2-gguf
+    Write-Host "======================" -ForegroundColor Cyan
+    Start-Sleep -Seconds 10
+}
+```
+
+**আমি এখনই ডাউনলোড পুনরায় চালু করছি এবং real-time progress monitor করছি!** 🎯
