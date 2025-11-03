@@ -407,6 +407,9 @@ async def runtime_get_status():
 
 @app.post("/runtime/load/{model}")
 async def runtime_load_model(model: str, threads: int = 4):
+    # DeepSeek-Coder-1.3B default threads=8 for optimal performance
+    if model == "deepseek-coder-1.3b" and threads == 4:
+        threads = 8
     # Resolve model path (restrict to GGUF to avoid incompatible formats)
     model_dir = MODELS_DIR / model
     model_path = None

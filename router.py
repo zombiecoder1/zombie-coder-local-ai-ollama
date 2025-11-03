@@ -220,6 +220,9 @@ def _idle_killer_loop(timeout_sec: int = 600, check_interval_sec: int = 30) -> N
                     continue
                 if last_ts is None:
                     continue
+                # DeepSeek-Coder-1.3B persistent loading: never unload
+                if model == "deepseek-coder-1.3b":
+                    continue
                 if now - last_ts >= timeout_sec:
                     try:
                         unload_model(model)
