@@ -1,0 +1,7 @@
+{
+  "model": "phi-2-gguf",
+  "prompt": "আপনি কেমন আছেন?",
+  "response": "",
+  "response_time": 23.405029296875,
+  "timestamp": "2025-11-16 05:32:10"
+}

@@ -1,0 +1,158 @@
+{
+  "phi-2-gguf": [
+    {
+      "test_name": "Basic Greeting",
+      "prompt": "আপনি কেমন আছেন?",
+      "result": {
+        "success": true,
+        "response_time": 12.71387505531311,
+        "response": "",
+        "status_code": 200
+      }
+    },
+    {
+      "test_name": "Simple Question",
+      "prompt": "আজকের তারিখ কি?",
+      "result": {
+        "success": true,
+        "response_time": 8.87803339958191,
+        "response": "",
+        "status_code": 200
+      }
+    },
+    {
+      "test_name": "Complex Query",
+      "prompt": "বাংলাদেশের মুক্তিযুদ্ধ কবে শুরু হয়েছিল?",
+      "result": {
+        "success": true,
+        "response_time": 10.903336763381958,
+        "response": "",
+        "status_code": 200
+      }
+    },
+    {
+      "test_name": "Translation Request",
+      "prompt": "Translate 'Good morning' to English",
+      "result": {
+        "success": true,
+        "response_time": 7.662077188491821,
+        "response": "",
+        "status_code": 200
+      }
+    },
+    {
+      "test_name": "Math Problem",
+      "prompt": "১০ + ৫ = কত?",
+      "result": {
+        "success": true,
+        "response_time": 12.399603128433228,
+        "response": "",
+        "status_code": 200
+      }
+    }
+  ],
+  "tinyllama-gguf": [
+    {
+      "test_name": "Basic Greeting",
+      "prompt": "আপনি কেমন আছেন?",
+      "result": {
+        "success": true,
+        "response_time": 9.450047492980957,
+        "response": "",
+        "status_code": 200
+      }
+    },
+    {
+      "test_name": "Simple Question",
+      "prompt": "আজকের তারিখ কি?",
+      "result": {
+        "success": true,
+        "response_time": 10.020925283432007,
+        "response": "",
+        "status_code": 200
+      }
+    },
+    {
+      "test_name": "Complex Query",
+      "prompt": "বাংলাদেশের মুক্তিযুদ্ধ কবে শুরু হয়েছিল?",
+      "result": {
+        "success": true,
+        "response_time": 12.222347736358643,
+        "response": "",
+        "status_code": 200
+      }
+    },
+    {
+      "test_name": "Translation Request",
+      "prompt": "Translate 'Good morning' to English",
+      "result": {
+        "success": true,
+        "response_time": 9.236697435379028,
+        "response": "",
+        "status_code": 200
+      }
+    },
+    {
+      "test_name": "Math Problem",
+      "prompt": "১০ + ৫ = কত?",
+      "result": {
+        "success": true,
+        "response_time": 9.216610670089722,
+        "response": "",
+        "status_code": 200
+      }
+    }
+  ],
+  "deepseek-coder-1.3b": [
+    {
+      "test_name": "Basic Greeting",
+      "prompt": "আপনি কেমন আছেন?",
+      "result": {
+        "success": true,
+        "response_time": 9.636921405792236,
+        "response": "",
+        "status_code": 200
+      }
+    },
+    {
+      "test_name": "Simple Question",
+      "prompt": "আজকের তারিখ কি?",
+      "result": {
+        "success": true,
+        "response_time": 13.195478439331055,
+        "response": "",
+        "status_code": 200
+      }
+    },
+    {
+      "test_name": "Complex Query",
+      "prompt": "বাংলাদেশের মুক্তিযুদ্ধ কবে শুরু হয়েছিল?",
+      "result": {
+        "success": true,
+        "response_time": 10.799302816390991,
+        "response": "",
+        "status_code": 200
+      }
+    },
+    {
+      "test_name": "Translation Request",
+      "prompt": "Translate 'Good morning' to English",
+      "result": {
+        "success": true,
+        "response_time": 23.639138221740723,
+        "response": "",
+        "status_code": 200
+      }
+    },
+    {
+      "test_name": "Math Problem",
+      "prompt": "১০ + ৫ = কত?",
+      "result": {
+        "success": true,
+        "response_time": 23.692484855651855,
+        "response": "",
+        "status_code": 200
+      }
+    }
+  ]
+}
