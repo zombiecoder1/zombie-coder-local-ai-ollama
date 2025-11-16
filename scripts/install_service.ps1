@@ -4,10 +4,13 @@
 Write-Host "🤖 ZombieCoderAI Service Installation" -ForegroundColor Green
 Write-Host "===================================" -ForegroundColor Green
 
-# Check if NSSM is installed
-$nssmPath = "C:\tools\nssm\nssm.exe"
-if (-not (Test-Path $nssmPath)) {
-    Write-Host "❌ NSSM not found at $nssmPath" -ForegroundColor Red
+# Check if NSSM is installed and get its path
+$nssmPath = $null
+try {
+    $nssmPath = (Get-Command nssm).Source
+    Write-Host "✅ Found NSSM at: $nssmPath" -ForegroundColor Green
+} catch {
+    Write-Host "❌ NSSM not found in PATH" -ForegroundColor Red
     Write-Host "Please install NSSM first:" -ForegroundColor Yellow
     Write-Host "1. Download NSSM from https://nssm.cc/download" -ForegroundColor Yellow
     Write-Host "2. Extract and place nssm.exe at C:\tools\nssm\nssm.exe" -ForegroundColor Yellow
