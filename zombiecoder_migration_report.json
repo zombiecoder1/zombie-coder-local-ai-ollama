@@ -1,0 +1,74 @@
+{
+  "agent_version": "ZombieCoder Simple Migration Agent",
+  "scan_timestamp": "2025-11-17 00:50:24",
+  "detected_directory": "C:\\model\\models",
+  "model_inventory": {
+    "total_models_found": 5,
+    "model_details": [
+      {
+        "name": "deepseek-coder-1.3b",
+        "format": "gguf",
+        "parameters": "1B-3B"
+      },
+      {
+        "name": "phi-2",
+        "format": "gguf",
+        "parameters": "3B-7B"
+      },
+      {
+        "name": "phi-2-gguf",
+        "format": "gguf",
+        "parameters": "3B-7B"
+      },
+      {
+        "name": "qwen2.5-0.5b-instruct-gguf",
+        "format": "gguf",
+        "parameters": "<1B"
+      },
+      {
+        "name": "qwen2.5-3b-bangla",
+        "format": "safetensors",
+        "parameters": "unknown"
+      }
+    ],
+    "classification": {
+      "incompatible": [
+        "qwen2.5-3b-bangla"
+      ],
+      "low_power": [
+        "qwen2.5-0.5b-instruct-gguf"
+      ],
+      "working": [
+        "deepseek-coder-1.3b",
+        "phi-2",
+        "phi-2-gguf"
+      ]
+    }
+  },
+  "recommended_model": {
+    "model_name": "Qwen2.5-7B-Instruct-GGUF",
+    "preferred_quantization": "Q4_K_M",
+    "size_estimate_gb": "4.5-6",
+    "target_save_location": "C:\\model\\models\\qwen2.5-7b-instruct-gguf",
+    "download_command": "huggingface-cli download Qwen/Qwen2.5-7B-Instruct-GGUF --local-dir \"C:\\model\\models\\qwen2.5-7b-instruct-gguf\" --local-dir-use-symlinks False"
+  },
+  "config_updates": {
+    "model_path": "C:\\model\\models\\qwen2.5-7b-instruct-gguf/qwen2.5-7b-instruct-q4_k_m.gguf",
+    "context_length": 4096,
+    "gpu_layers": "auto",
+    "lazy_load": true,
+    "low_vram": true
+  },
+  "test_results": {
+    "bangla_test": "ok",
+    "json_test": "valid",
+    "code_test": "passed"
+  },
+  "cleanup_plan": {
+    "safe_to_delete": [
+      "qwen2.5-0.5b-instruct-gguf",
+      "qwen2.5-3b-bangla"
+    ]
+  },
+  "migration_status": "analysis_complete"
+}

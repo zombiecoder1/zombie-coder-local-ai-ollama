@@ -1,0 +1,125 @@
+{
+  "scan_results": {
+    "found_models": [
+      {
+        "name": "deepseek-coder-1.3b",
+        "path": "C:\\model\\models\\deepseek-coder-1.3b",
+        "gguf_files": [
+          "deepseek-coder-1.3b-instruct.Q4_K_M.gguf"
+        ],
+        "safetensors_files": [],
+        "size_mb": 833.1133117675781,
+        "format": "gguf",
+        "file_count": 1,
+        "metadata_files": []
+      },
+      {
+        "name": "phi-2",
+        "path": "C:\\model\\models\\phi-2",
+        "gguf_files": [
+          "phi-2.Q4_K_M.gguf"
+        ],
+        "safetensors_files": [
+          "model-00001-of-00002.safetensors",
+          "model-00002-of-00002.safetensors"
+        ],
+        "size_mb": 5304.6616468429565,
+        "format": "gguf",
+        "file_count": 20,
+        "metadata_files": [
+          "config.json"
+        ]
+      },
+      {
+        "name": "phi-2-gguf",
+        "path": "C:\\model\\models\\phi-2-gguf",
+        "gguf_files": [
+          "phi-2.Q2_K.gguf",
+          "phi-2.Q3_K_S.gguf"
+        ],
+        "safetensors_files": [],
+        "size_mb": 2312.1168823242188,
+        "format": "gguf",
+        "file_count": 2,
+        "metadata_files": []
+      },
+      {
+        "name": "qwen0_5b",
+        "path": "C:\\model\\models\\qwen0_5b",
+        "gguf_files": [],
+        "safetensors_files": [],
+        "size_mb": 0.0,
+        "format": "unknown",
+        "file_count": 0,
+        "metadata_files": []
+      },
+      {
+        "name": "qwen2.5-0.5b-instruct-gguf",
+        "path": "C:\\model\\models\\qwen2.5-0.5b-instruct-gguf",
+        "gguf_files": [
+          "qwen2.5-0.5b-instruct-q2_k.gguf"
+        ],
+        "safetensors_files": [],
+        "size_mb": 406.9235382080078,
+        "format": "gguf",
+        "file_count": 21,
+        "metadata_files": [
+          "config.json"
+        ]
+      },
+      {
+        "name": "qwen2.5-3b-bangla",
+        "path": "C:\\model\\models\\qwen2.5-3b-bangla",
+        "gguf_files": [],
+        "safetensors_files": [
+          "model-00001-of-00002.safetensors",
+          "model-00002-of-00002.safetensors"
+        ],
+        "size_mb": 5895.370762825012,
+        "format": "safetensors",
+        "file_count": 15,
+        "metadata_files": [
+          "config.json"
+        ]
+      }
+    ],
+    "incompatible": [
+      "qwen2.5-3b-bangla"
+    ],
+    "low_power": [
+      "qwen2.5-0.5b-instruct-gguf"
+    ],
+    "safe_to_delete": [
+      "qwen2.5-0.5b-instruct-gguf",
+      "qwen2.5-3b-bangla"
+    ]
+  },
+  "recommendation": {
+    "recommended_model": "Qwen2.5-7B-Instruct-GGUF",
+    "download_url": "https://huggingface.co/Qwen/Qwen2.5-7B-Instruct-GGUF",
+    "target_save_location": "C:\\model\\models\\qwen2.5-7b-instruct-gguf",
+    "quant_choice": "Q4_K_M",
+    "estimated_size_gb": "4.5-6",
+    "download_command": "huggingface-cli download Qwen/Qwen2.5-7B-Instruct-GGUF --local-dir C:\\model\\models\\qwen2.5-7b-instruct-gguf --local-dir-use-symlinks False"
+  },
+  "config_updates": {
+    "update_config": {
+      "model_path": "C:\\model\\models\\qwen2.5-7b-instruct-gguf/qwen2.5-7b-instruct-q4_k_m.gguf",
+      "context": 4096,
+      "gpu_layers": "auto",
+      "lazyload": true,
+      "low_vram": true
+    }
+  },
+  "delete_list": {
+    "safe_to_delete": [
+      "qwen2.5-0.5b-instruct-gguf",
+      "qwen2.5-3b-bangla"
+    ]
+  },
+  "test_results": {
+    "bangla_test": "ok",
+    "json_test": "invalid",
+    "tool_test": "passed"
+  }
+}

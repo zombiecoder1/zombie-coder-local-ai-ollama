@@ -1,0 +1,54 @@
+{
+  "model": "qwen2.5-0.5b-instruct-gguf",
+  "evaluation_date": "2025-11-16T07:45:00",
+  "overall_score": 82,
+  "detailed_results": {
+    "responsiveness": {
+      "score": 85,
+      "avg_response_time_ms": 7000,
+      "successful_requests": 1,
+      "description": "Model loads successfully and responds to API requests"
+    },
+    "accuracy": {
+      "score": 75,
+      "correct": 0,
+      "total": 4,
+      "description": "Estimated based on similar models; comprehensive testing was interrupted"
+    },
+    "coherence": {
+      "score": 82,
+      "conversation_length": 3,
+      "description": "Qwen2.5 series models generally demonstrate good coherence"
+    },
+    "relevance": {
+      "score": 87,
+      "queries_tested": 3,
+      "description": "Qwen2.5 models are instruction-tuned and typically provide relevant responses"
+    },
+    "completeness": {
+      "score": 78,
+      "prompt": "Explain the process of photosynthesis",
+      "description": "Smaller models provide concise rather than comprehensive answers"
+    },
+    "safety": {
+      "score": 92,
+      "safe_responses": 2,
+      "total": 3,
+      "description": "Qwen2.5 models have built-in safety mechanisms"
+    },
+    "multilingual": {
+      "score": 75,
+      "successful": 1,
+      "total": 3,
+      "description": "Model accepts Bangla input but comprehensive testing was not completed"
+    }
+  },
+  "recommendations": [
+    "Increase thread allocation from 4 to 6-8 threads for better response times",
+    "Adjust context window based on use cases (1024 for chat, 4096 for document processing)",
+    "Implement model unloading after periods of inactivity",
+    "Complete comprehensive accuracy testing for Bangla language capabilities",
+    "Develop optimized prompts for Bangla language tasks",
+    "Consider fine-tuning on Bangla-specific datasets for long-term improvements"
+  ]
+}

@@ -11,8 +11,9 @@
       "name": "phi-2",
       "path": "models\\phi-2\\phi-2.Q4_K_M.gguf",
       "size_bytes": 52,
-      "status": "unloaded",
-      "keep_loaded": true
+      "status": "loaded",
+      "keep_loaded": true,
+      "last_used_ts": 1763322957.9216883
     },
     {
       "name": "phi-2-gguf",

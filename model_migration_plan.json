@@ -1,0 +1,72 @@
+{
+  "model_migration_plan": {
+    "current_status": {
+      "found_models": 6,
+      "incompatible_models": [
+        "qwen2.5-3b-bangla"
+      ],
+      "low_power_models": [
+        "qwen2.5-0.5b-instruct-gguf"
+      ],
+      "working_models": [
+        "phi-2",
+        "phi-2-gguf",
+        "deepseek-coder-1.3b"
+      ]
+    },
+    "recommended_action": {
+      "install_new_model": {
+        "model_name": "Qwen2.5-7B-Instruct-GGUF",
+        "quantization": "Q4_K_M",
+        "reason": "Better balance of capability and resource usage for Bangla language support",
+        "estimated_size_gb": "4.5-6",
+        "download_command": "huggingface-cli download Qwen/Qwen2.5-7B-Instruct-GGUF --local-dir models/qwen2.5-7b-instruct-gguf --local-dir-use-symlinks False"
+      },
+      "safe_to_delete": [
+        "qwen2.5-3b-bangla",
+        "qwen2.5-0.5b-instruct-gguf"
+      ],
+      "keep_models": [
+        "phi-2",
+        "phi-2-gguf",
+        "deepseek-coder-1.3b"
+      ]
+    },
+    "config_updates": {
+      "new_model_config": {
+        "model_path": "models/qwen2.5-7b-instruct-gguf/qwen2.5-7b-instruct-q4_k_m.gguf",
+        "context_length": 4096,
+        "gpu_layers": "auto",
+        "lazy_load": true,
+        "low_vram": true
+      }
+    },
+    "testing_plan": {
+      "test_cases": [
+        {
+          "name": "Bangla Language Support",
+          "prompt": "বাংলায় ২ লাইনের সারাংশ লিখুন: আজ আকাশে অনেক মেঘ।",
+          "expected": "Response in Bangla language"
+        },
+        {
+          "name": "JSON Generation",
+          "prompt": "Return ONLY valid JSON. Create a todo list with 3 items.",
+          "expected": "Valid JSON format"
+        },
+        {
+          "name": "Code Generation",
+          "prompt": "Write a python function that returns fib(10). Only return the function, no explanation.",
+          "expected": "Valid Python function"
+        }
+      ]
+    },
+    "implementation_steps": [
+      "1. Download Qwen2.5-7B-Instruct-GGUF using the provided command",
+      "2. Verify the model loads correctly with lazy loading",
+      "3. Test all three test cases to validate functionality",
+      "4. Update configuration to use the new model as default",
+      "5. Remove the safe_to_delete models to free disk space",
+      "6. Document the migration in the model registry"
+    ]
+  }
+}

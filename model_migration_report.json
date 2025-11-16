@@ -1,0 +1,15 @@
+{
+  "agent_version": "ZombieCoder Local Model Agent v1.0",
+  "execution_timestamp": "2025-11-17 01:07:50",
+  "models_directory": "C:\\model\\models",
+  "lock_status": {
+    "lock_files_found": [],
+    "lock_files_deleted": [],
+    "processes_holding_locks": []
+  },
+  "deleted_models": [],
+  "downloaded_models": [],
+  "test_results": {},
+  "config_updates": {},
+  "migration_summary": {}
+}

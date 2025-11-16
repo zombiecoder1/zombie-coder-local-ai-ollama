@@ -71,6 +71,7 @@ python model_server.py
 
 Server starts at: **http://localhost:8155**
 
+
 ---
 
 ## 🚀 Quick Start

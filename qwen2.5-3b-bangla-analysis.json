@@ -1,0 +1,53 @@
+{
+  "model_analysis": {
+    "target_model": "qwen2.5-3b-bangla",
+    "analysis_date": "2025-11-17",
+    "findings": {
+      "installed_status": "present",
+      "format": "safetensors",
+      "compatibility": "incompatible",
+      "issue": "llama.cpp runtime only supports GGUF format",
+      "files": [
+        {
+          "name": "model-00001-of-00002.safetensors",
+          "size_gb": 3.97
+        },
+        {
+          "name": "model-00002-of-00002.safetensors",
+          "size_gb": 2.20
+        }
+      ],
+      "total_size_gb": 5.89
+    },
+    "working_alternative": {
+      "model": "qwen2.5-0.5b-instruct-gguf",
+      "status": "operational",
+      "format": "GGUF",
+      "size_mb": 406.92,
+      "file": "qwen2.5-0.5b-instruct-q2_k.gguf",
+      "test_result": "successful",
+      "test_prompt": "Translate to Bengali: Hello, how are you?",
+      "port": 8080
+    },
+    "recommendations": [
+      "Continue using the qwen2.5-0.5b-instruct-gguf model for Bangla language support",
+      "Remove the incompatible qwen2.5-3b-bangla safetensors model to save disk space",
+      "Document the working model configuration as the official Bangla language solution"
+    ],
+    "technical_explanation": {
+      "incompatibility_reason": "llama.cpp runtime only supports GGUF format",
+      "gguf_benefits": [
+        "Optimized for efficient inference",
+        "Native llama.cpp compatibility",
+        "Engine-specific optimizations",
+        "Support for various quantization levels"
+      ]
+    }
+  },
+  "privacy_compliance": {
+    "local_processing": true,
+    "cloud_connectivity": false,
+    "data_isolation": true,
+    "process_isolation": true
+  }
+}
