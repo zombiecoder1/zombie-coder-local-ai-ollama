@@ -1,0 +1,12 @@
+{
+  "server_port": 8007,
+  "models_dir": "C:\\model\\models",
+  "keep_loaded_default": true,
+  "idle_unload_seconds": 86400,
+  "ram_threshold_mb": 14000,
+  "upstream_ollama": null,
+  "auth": {
+    "enable_api_key": true,
+    "api_key": "zombie-local-please-change"
+  }
+}

@@ -344,7 +344,7 @@ python C:\model\model_server.py</pre>
 import axios from 'axios';
 
 let baseUrl = 'http://127.0.0.1:8155';
-const HF_TOKEN = 'hf_YOUR_TOKEN_HERE';
+const HF_TOKEN = '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';
 
 export function activate(context: vscode.ExtensionContext) {
   const config = vscode.workspace.getConfiguration('zombiecoder');
@@ -471,7 +471,7 @@ export function deactivate() {}</pre>
 import requests
 
 OLLAMA_BASE_URL = "http://127.0.0.1:8155"  # Ollama এর জায়গায় ZombieCoder
-HF_TOKEN = "hf_YOUR_TOKEN_HERE"
+HF_TOKEN = "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"
 
 # Set HuggingFace token
 requests.post(f"{OLLAMA_BASE_URL}/auth/hf_token", json={"token": HF_TOKEN})
@@ -491,7 +491,7 @@ print(response.json())
 const axios = require('axios');
 
 const OLLAMA_BASE_URL = 'http://127.0.0.1:8155';
-const HF_TOKEN = 'hf_YOUR_TOKEN_HERE';
+const HF_TOKEN = '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';
 
 // Set HuggingFace token
 await axios.post(`${OLLAMA_BASE_URL}/auth/hf_token`, {token: HF_TOKEN});

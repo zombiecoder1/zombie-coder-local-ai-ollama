@@ -1,0 +1,46 @@
+{
+  "models": [
+    {
+      "name": "deepseek-coder-1.3b",
+      "path": "models\\deepseek-coder-1.3b\\deepseek-coder-1.3b-instruct.Q4_K_M.gguf",
+      "size_bytes": 873582624,
+      "status": "unloaded",
+      "keep_loaded": true
+    },
+    {
+      "name": "phi-2",
+      "path": "models\\phi-2\\phi-2.Q4_K_M.gguf",
+      "size_bytes": 52,
+      "status": "unloaded",
+      "keep_loaded": true
+    },
+    {
+      "name": "phi-2-gguf",
+      "path": "models\\phi-2-gguf\\phi-2.Q2_K.gguf",
+      "size_bytes": 1173610336,
+      "status": "unloaded",
+      "keep_loaded": true
+    },
+    {
+      "name": "phi-2-gguf",
+      "path": "models\\phi-2-gguf\\phi-2.Q3_K_S.gguf",
+      "size_bytes": 1250819936,
+      "status": "unloaded",
+      "keep_loaded": true
+    },
+    {
+      "name": "qwen2.5-0.5b-instruct-gguf",
+      "path": "models\\qwen2.5-0.5b-instruct-gguf\\qwen2.5-0.5b-instruct-q4_k_m.gguf",
+      "size_bytes": 491400032,
+      "status": "unloaded",
+      "keep_loaded": true
+    },
+    {
+      "name": "qwen2.5-1.5b-instruct-gguf",
+      "path": "models\\qwen2.5-1.5b-instruct-gguf\\qwen2.5-1.5b-instruct-q4_k_m.gguf",
+      "size_bytes": 1117320736,
+      "status": "unloaded",
+      "keep_loaded": true
+    }
+  ]
+}
