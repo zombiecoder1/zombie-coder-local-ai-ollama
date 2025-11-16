@@ -1,0 +1,26 @@
+[
+    {
+        "name": "qwen2.5-3b-bangla",
+        "description": "বাংলা টেক্সট জেনারেশন মডেল, কনভারসেশন ও প্রশ্ন-উত্তর সমর্থন করে",
+        "type": "text-generation",
+        "path": "models/qwen2.5-3b-bangla"
+    },
+    {
+        "name": "mpt-7b-instruct",
+        "description": "ইংরেজি ইনস্ট্রাকশন ফলোয়িং মডেল, ডকুমেন্ট রাইটিং এবং রিকমেন্ডেশন সমর্থন করে",
+        "type": "text-generation",
+        "path": "models/mpt-7b-instruct"
+    },
+    {
+        "name": "llama-2-7b-chat",
+        "description": "চ্যাট এবং কনভারসেশন মডেল, সাধারণ কথোপকথন ও কোড সহায়তা দেয়",
+        "type": "chat",
+        "path": "models/llama-2-7b-chat"
+    },
+    {
+        "name": "bloomz-3b",
+        "description": "মাল্টি-ল্যাঙ্গুয়েজ কনভারসেশন মডেল, বাংলাসহ বিভিন্ন ভাষা সমর্থন করে",
+        "type": "text-generation",
+        "path": "models/bloomz-3b"
+    }
+]
