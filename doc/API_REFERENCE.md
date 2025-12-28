@@ -68,8 +68,8 @@ List all installed models
 {
   "models": [
     {
-      "name": "tinyllama-gguf",
-      "path": "C:\\model\\models\\tinyllama-gguf",
+      "name": "deepseek-coder-1.3b",
+      "path": "C:\\model\\models\\deepseek-coder-1.3b",
       "size_mb": 8076.8,
       "detected_at": "2025-10-18T00:00:00"
     }
@@ -105,8 +105,8 @@ List models in standard format
 {
   "models": [
     {
-      "name": "tinyllama-gguf",
-      "model": "tinyllama-gguf",
+      "name": "deepseek-coder-1.3b",
+      "model": "deepseek-coder-1.3b",
       "modified_at": "2025-10-18T00:00:00",
       "size": 8469158021,
       "digest": "local",
@@ -137,7 +137,7 @@ Current runtime state
 {
   "models": [
     {
-      "model": "tinyllama-gguf",
+      "model": "deepseek-coder-1.3b",
       "status": "ready",
       "port": 8080,
       "pid": 12345,
@@ -161,18 +161,18 @@ Load a model into memory
 
 **Request:**
 ```bash
-POST /runtime/load/tinyllama-gguf?threads=4
+POST /runtime/load/deepseek-coder-1.3b?threads=4
 ```
 
 **Response:**
 ```json
 {
   "status": "ready",
-  "model": "tinyllama-gguf",
+  "model": "deepseek-coder-1.3b",
   "port": 8080,
   "pid": 12345,
   "command": "C:\\model\\config\\llama.cpp\\server.exe --model ...",
-  "log": "C:\\model\\logs\\runtime_tinyllama-gguf.log",
+  "log": "C:\\model\\logs\\runtime_deepseek-coder-1.3b.log",
   "gpu_layers": 0
 }
 ```
@@ -182,14 +182,14 @@ Unload a model from memory
 
 **Request:**
 ```bash
-POST /runtime/unload/tinyllama-gguf
+POST /runtime/unload/deepseek-coder-1.3b
 ```
 
 **Response:**
 ```json
 {
   "status": "stopped",
-  "model": "tinyllama-gguf"
+  "model": "deepseek-coder-1.3b"
 }
 ```
 
@@ -215,7 +215,7 @@ Generate text using loaded model
 **Request Body:**
 ```json
 {
-  "model": "tinyllama-gguf",
+  "model": "deepseek-coder-1.3b",
   "prompt": "Write a Python hello world program",
   "stream": false,
   "options": {
@@ -227,7 +227,7 @@ Generate text using loaded model
 **Response:**
 ```json
 {
-  "model": "tinyllama-gguf",
+  "model": "deepseek-coder-1.3b",
   "runtime_port": 8080,
   "runtime_response": {
     "content": "print('Hello, World!')",
@@ -279,7 +279,7 @@ Get session information
     "session_id": "sess-1760726404",
     "created_at": "2025-10-18T00:00:00",
     "last_seen_at": "2025-10-18T00:05:00",
-    "last_model": "tinyllama-gguf"
+    "last_model": "deepseek-coder-1.3b"
   },
   "status": "active"
 }
@@ -306,7 +306,7 @@ Start model download from HuggingFace
 **Request Body:**
 ```json
 {
-  "model_name": "tinyllama-gguf",
+  "model_name": "deepseek-coder-1.3b",
   "repo_id": "TheBloke/TinyLlama-1.1B-Chat-GGUF",
   "revision": "main"
 }
@@ -316,7 +316,7 @@ Start model download from HuggingFace
 ```json
 {
   "status": "started",
-  "model_name": "tinyllama-gguf",
+  "model_name": "deepseek-coder-1.3b",
   "repo_id": "TheBloke/TinyLlama-1.1B-Chat-GGUF"
 }
 ```
@@ -330,7 +330,7 @@ Check download progress
   "status": "downloading",
   "job": {
     "repo_id": "TheBloke/TinyLlama-1.1B-Chat-GGUF",
-    "target_dir": "C:\\model\\models\\tinyllama-gguf",
+    "target_dir": "C:\\model\\models\\deepseek-coder-1.3b",
     "started_at": "2025-10-18T00:00:00",
     "progress": 45.5,
     "state": "downloading"
@@ -351,7 +351,7 @@ Cancel ongoing download
 ```json
 {
   "status": "cancelled",
-  "model": "tinyllama-gguf"
+  "model": "deepseek-coder-1.3b"
 }
 ```
 
@@ -521,7 +521,7 @@ Check if token is set
 
 3. **Load Model:**
    ```bash
-   POST /runtime/load/tinyllama-gguf?threads=4
+   POST /runtime/load/deepseek-coder-1.3b?threads=4
    ```
 
 4. **Wait for Ready:**
@@ -534,14 +534,14 @@ Check if token is set
    ```bash
    POST /api/generate
    {
-     "model": "tinyllama-gguf",
+     "model": "deepseek-coder-1.3b",
      "prompt": "Your prompt here"
    }
    ```
 
 6. **Unload When Done:**
    ```bash
-   POST /runtime/unload/tinyllama-gguf
+   POST /runtime/unload/deepseek-coder-1.3b
    ```
 
 ---
@@ -556,7 +556,7 @@ BASE_URL = "http://localhost:8155"
 
 # 1. Load model
 response = requests.post(
-    f"{BASE_URL}/runtime/load/tinyllama-gguf",
+    f"{BASE_URL}/runtime/load/deepseek-coder-1.3b",
     params={"threads": 4}
 )
 print(f"Model loaded: {response.json()['status']}")
@@ -568,7 +568,7 @@ time.sleep(3)
 response = requests.post(
     f"{BASE_URL}/api/generate",
     json={
-        "model": "tinyllama-gguf",
+        "model": "deepseek-coder-1.3b",
         "prompt": "Write Python factorial function"
     }
 )
@@ -577,7 +577,7 @@ result = response.json()
 print(f"Response: {result['runtime_response']['content']}")
 
 # 4. Unload
-requests.post(f"{BASE_URL}/runtime/unload/tinyllama-gguf")
+requests.post(f"{BASE_URL}/runtime/unload/deepseek-coder-1.3b")
 ```
 
 ---
@@ -588,7 +588,7 @@ requests.post(f"{BASE_URL}/runtime/unload/tinyllama-gguf")
 const BASE_URL = 'http://localhost:8155';
 
 // Load model
-await fetch(`${BASE_URL}/runtime/load/tinyllama-gguf?threads=4`, {
+await fetch(`${BASE_URL}/runtime/load/deepseek-coder-1.3b?threads=4`, {
   method: 'POST'
 });
 
@@ -600,7 +600,7 @@ const response = await fetch(`${BASE_URL}/api/generate`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    model: 'tinyllama-gguf',
+    model: 'deepseek-coder-1.3b',
     prompt: 'Write JavaScript hello world'
   })
 });
@@ -609,7 +609,7 @@ const data = await response.json();
 console.log(data.runtime_response.content);
 
 // Unload
-await fetch(`${BASE_URL}/runtime/unload/tinyllama-gguf`, {
+await fetch(`${BASE_URL}/runtime/unload/deepseek-coder-1.3b`, {
   method: 'POST'
 });
 ```
