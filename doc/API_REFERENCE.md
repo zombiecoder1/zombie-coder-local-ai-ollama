@@ -86,11 +86,11 @@ Get recommended models based on system tier
 ```json
 [
   {
-    "name": "TinyLlama-1.1B",
+    "name": "deepseek-coder-1.3b",
     "size": "1.1B",
     "ram_required": "2-3 GB",
     "description": "সবচেয়ে হালকা, সাধারণ টেক্সট ও চ্যাট",
-    "huggingface_id": "TheBloke/TinyLlama-1.1B-Chat-GGUF",
+    "huggingface_id": "TheBloke/deepseek-coder-1.3b-Chat-GGUF",
     "recommended": true,
     "compatibility": "recommended"
   }
@@ -307,7 +307,7 @@ Start model download from HuggingFace
 ```json
 {
   "model_name": "deepseek-coder-1.3b",
-  "repo_id": "TheBloke/TinyLlama-1.1B-Chat-GGUF",
+  "repo_id": "TheBloke/deepseek-coder-1.3b-Chat-GGUF",
   "revision": "main"
 }
 ```
@@ -317,7 +317,7 @@ Start model download from HuggingFace
 {
   "status": "started",
   "model_name": "deepseek-coder-1.3b",
-  "repo_id": "TheBloke/TinyLlama-1.1B-Chat-GGUF"
+  "repo_id": "TheBloke/deepseek-coder-1.3b-Chat-GGUF"
 }
 ```
 
@@ -329,7 +329,7 @@ Check download progress
 {
   "status": "downloading",
   "job": {
-    "repo_id": "TheBloke/TinyLlama-1.1B-Chat-GGUF",
+    "repo_id": "TheBloke/deepseek-coder-1.3b-Chat-GGUF",
     "target_dir": "C:\\model\\models\\deepseek-coder-1.3b",
     "started_at": "2025-10-18T00:00:00",
     "progress": 45.5,
